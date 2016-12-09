@@ -15,6 +15,10 @@ namespace :carnd do
     sh "ssh -t carnd@#{CARND_IP} 'python3 #{args[:network]}'"
   end
 
+  task :drive do |t, args|
+    sh 'python drive.py model.json'
+  end
+
   task :start, [:instance_id] do |t, args|
     args.with_defaults(instance_id: INSTANCE_ID)
     instance_id = args[:instance_id]
