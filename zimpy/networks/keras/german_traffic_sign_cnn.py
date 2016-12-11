@@ -43,6 +43,8 @@ hidden_layer_neurons = 128
 # A float between 0 and 1. Fraction of the input units to drop.
 dropout_p_1, dropout_p_2 = 0.5, 0.5
 
+input_shape = (img_rows, img_cols, nb_channels)
+
 # If Theano backend, input_shape is different so let's take care of that first
 # if K.image_dim_ordering() == 'th':
 #     X_train = X_train.reshape(X_train.shape[0], nb_channels, img_rows, img_cols)
@@ -52,7 +54,6 @@ dropout_p_1, dropout_p_2 = 0.5, 0.5
 #     input_shape = (img_rows, img_cols, nb_channels)
 
 X_train = X_train.reshape(X_train.shape[0], img_rows, img_cols, nb_channels)
-input_shape = (img_rows, img_cols, nb_channels)
 
 # build the model
 model = Sequential(name='input')
