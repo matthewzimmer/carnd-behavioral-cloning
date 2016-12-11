@@ -1,11 +1,8 @@
 import os
 import csv
-import pickle
 import tensorflow as tf
 import numpy as np
 from keras.applications import VGG16
-from keras.layers import Input, Flatten, Dense
-from keras.models import Model
 
 from scipy import misc
 from sklearn.model_selection import train_test_split
@@ -16,10 +13,8 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 # command line flags
-# flags.DEFINE_string('training_file', '', "Bottleneck features training file (.p)")
-# flags.DEFINE_string('validation_file', '', "Bottleneck features validation file (.p)")
 flags.DEFINE_string('network_arch', 'commaai', "The network architecture to train on.")
-flags.DEFINE_integer('epochs', 1, "The number of epochs.")
+flags.DEFINE_integer('epochs', 5, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 256, "The batch size.")
 
 
@@ -57,7 +52,6 @@ def load_track_data():
 def main(_):
     X_train, y_train, X_val, y_val = load_track_data()
 
-    # model = TrainTrackA()
     if FLAGS.network_arch == 'commaai':
         model = CommaAI()
     elif FLAGS.network_arch == 'vgg16':
