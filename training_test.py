@@ -26,9 +26,9 @@ def load_track_data():
     # train_data_paths.append('data/training/2')
 
     for train_data_path in train_data_paths:
-        drive_log_path = train_data_path+'/drive_log.csv'
+        drive_log_path = train_data_path + '/drive_log.csv'
         if os.path.isfile(drive_log_path):
-            with open(train_data_path+'/drive_log.csv', 'r') as drive_logs:
+            with open(train_data_path + '/drive_log.csv', 'r') as drive_logs:
                 has_header = csv.Sniffer().has_header(drive_logs.read(1024))
                 drive_logs.seek(0)  # rewind
                 incsv = csv.reader(drive_logs)
@@ -39,7 +39,6 @@ def load_track_data():
                     X_train.append(misc.imread(row[0]))
                     y_train.append(float(row[3]))
 
-
     # Split some of the training data into a validation dataset.
     X_train, X_val, y_train, y_val = train_test_split(
         X_train,
@@ -48,6 +47,7 @@ def load_track_data():
         random_state=0)
 
     return np.array(X_train), np.array(y_train), np.array(X_val), np.array(y_val)
+
 
 def main(_):
     X_train, y_train, X_val, y_val = load_track_data()
@@ -61,7 +61,8 @@ def main(_):
         raise NotImplementedError
 
     # train model
-    model.fit(X_train, y_train, nb_epoch=FLAGS.epochs, batch_size=FLAGS.batch_size, validation_data=(X_val, y_val), shuffle=True)
+    model.fit(X_train, y_train, nb_epoch=FLAGS.epochs, batch_size=FLAGS.batch_size, validation_data=(X_val, y_val),
+              shuffle=True)
     model.save()
 
 
