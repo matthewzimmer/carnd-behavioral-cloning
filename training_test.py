@@ -3,11 +3,16 @@ import csv
 import tensorflow as tf
 import numpy as np
 from keras.applications import VGG16
-
+from keras.layers import Dense, Flatten, Dropout, ELU
+from keras.preprocessing.image import ImageDataGenerator
+from keras.utils import np_utils
+import math
+import cv2
 from scipy import misc
 from sklearn.model_selection import train_test_split
 
 from training import TrainTrackA, CommaAI
+from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -16,54 +21,221 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('network_arch', 'commaai', "The network architecture to train on.")
 flags.DEFINE_integer('epochs', 5, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 256, "The batch size.")
+flags.DEFINE_integer('samples_per_epoch', 256, "The number of samples per epoch during training.")
+flags.DEFINE_integer('algo_mode', 1, "The algorithm to train against.")
+
+train_samples_seen = []
+X_train, y_train, X_val, y_val = None, None, None, None
+img_rows, img_cols = None, None
 
 
-def load_track_data():
-    X_train, y_train = [], []
+def gen_train(batch_size=16):
+    global train_samples_seen, X_train, y_train
 
-    train_data_paths = []
-    train_data_paths.append('data/training/1')
-    # train_data_paths.append('data/training/2')
+    num_training = len(X_train)
+    _index_in_epoch = 0
+    start_i = 0
+    while True:
+        # for i in range(math.floor(X_train.shape[0] / (1. * batch_size))):  # 100 * 32 = 3200 -> # of training samples
+        # if i % 25 == 0:
+        #     print("train i = " + str(i))
+        # start_i = i * batch_size
+        # end_i = (i + 1) * batch_size
+        # train_samples_seen += list(range(start_i, end_i))
+        # print('   train sample range: ', range(start_i, end_i))
+        # yield X_train[start_i:end_i], y_train[start_i:end_i]
 
-    for train_data_path in train_data_paths:
-        drive_log_path = train_data_path + '/drive_log.csv'
-        if os.path.isfile(drive_log_path):
-            with open(train_data_path + '/drive_log.csv', 'r') as drive_logs:
-                has_header = csv.Sniffer().has_header(drive_logs.read(1024))
-                drive_logs.seek(0)  # rewind
-                incsv = csv.reader(drive_logs)
-                if has_header:
-                    next(incsv)  # skip header row
-                plots = csv.reader(drive_logs, delimiter=',')
-                for row in plots:
-                    X_train.append(misc.imread(row[0]))
-                    y_train.append(float(row[3]))
+        for i in range(100 * batch_size):  # 100 * 16 = 1600 -> # of training samples
+            _index_in_epoch += batch_size
+            if _index_in_epoch > num_training:
+                # Shuffle the data
+                perm = np.arange(num_training)
+                np.random.shuffle(perm)
+                X_train = X_train[perm]
+                y_train = y_train[perm]
 
-    # Split some of the training data into a validation dataset.
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train,
-        y_train,
-        test_size=0.25,
-        random_state=0)
+                # Start next epoch
+                start_i = 0
+                _index_in_epoch = batch_size
+                assert batch_size <= num_training
+            end_i = _index_in_epoch
+            print('  yielding train items in range {}'.format(range(start_i, end_i)))
+            yield X_train[start_i:end_i], y_train[start_i:end_i]
 
-    return np.array(X_train), np.array(y_train), np.array(X_val), np.array(y_val)
+
+def gen_val(batch_size=16):
+    global X_train, y_train
+    while True:
+        for i in range(math.floor(X_train.shape[0] / (1. * batch_size))):  # 100 * 32 = 3200 -> # of validation samples
+            if i % 25 == 0:
+                print("validate i = " + str(i))
+            start_i = i * batch_size
+            end_i = (i + 1) * batch_size
+            yield X_val[start_i:end_i], y_val[start_i:end_i]
+
+
+def load_track_data(output_shape=None, repickle=False):
+    pickle_file = 'train.p'
+    if repickle == True or not os.path.isfile(pickle_file):
+        X_train, y_train = [], []
+        train_data_paths = []
+        train_data_paths.append('.')
+        train_data_paths.append('data/training/1')
+        # train_data_paths.append('data/training/2')
+        train_data_paths.append('data/training/3')
+        train_data_paths.append('data/training/4')
+        train_data_paths.append('data/training/5')
+        train_data_paths.append('data/training/6')
+        train_data_paths.append('data/training/7')
+        train_data_paths.append('data/training/8')
+
+        for train_data_path in train_data_paths:
+            drive_log_path = train_data_path + '/driving_log.csv'
+            if os.path.isfile(drive_log_path):
+                with open(train_data_path + '/driving_log.csv', 'r') as drive_logs:
+                    observations = csv.reader(drive_logs, delimiter=',')
+                    for observation in observations:
+                        image_path = observation[0]
+                        if os.path.isfile(observation[0]):
+                            orig_image = misc.imread(observation[0])
+                            out_image = orig_image
+                            if output_shape is not None:
+                                # print('down sampling original image to ', output_shape)
+                                out_image = cv2.resize(orig_image, (output_shape[1], output_shape[0]),
+                                                       interpolation=cv2.INTER_AREA)
+                            X_train.append(out_image)
+                            y_train.append(float(observation[3]))
+                            # else:
+                            #     print(' image not found: ', image_path)
+
+        # Split some of the training data into a validation dataset.
+        X_train, X_val, y_train, y_val = train_test_split(
+            X_train,
+            y_train,
+            test_size=0.2,
+            random_state=0)
+
+        X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train), np.array(X_val), np.array(y_val)
+        X_train = X_train.astype('float32')
+        X_val = X_val.astype('float32')
+
+        TrainedDataSerializer.save_data(
+            data={'X_train': X_train, 'y_train': y_train, 'X_val': X_val, 'y_val': y_val},
+            pickle_file=pickle_file,
+            overwrite=True
+        )
+    else:
+        data = TrainedDataSerializer.reload_data(pickle_file=pickle_file)
+        X_train, y_train, X_val, y_val = data['X_train'], data['y_train'], data['X_val'], data['y_val']
+
+    return X_train, y_train, X_val, y_val
 
 
 def main(_):
-    X_train, y_train, X_val, y_val = load_track_data()
+    global X_train, y_train, X_val, y_val
 
-    if FLAGS.network_arch == 'commaai':
-        model = CommaAI()
-    elif FLAGS.network_arch == 'vgg16':
-        model = VGG16(include_top=True, weights='imagenet',
-                      input_tensor=None, input_shape=None)
+    # if FLAGS.network_arch == 'commaai':
+    #     clf = CommaAI()
+    # elif FLAGS.network_arch == 'vgg16':
+    #     clf = VGG16(include_top=True, weights='imagenet',
+    #                   input_tensor=None, input_shape=None)
+    # else:
+    #     raise NotImplementedError
+
+
+    input_shape = (160, 320, 3)
+    output_shape = (160, 320, 3)
+
+    # fits the model on batches with real-time data augmentation:
+    train_mode = FLAGS.algo_mode
+    if train_mode == 1:
+        output_shape = (int(160 / 3), int(320 / 3), 3)
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
+        # img_rows, img_cols = X_train.shape[1], X_train.shape[2]
+
+        print('X_train shape: ', X_train.shape)
+        print('X_val shape:   ', X_val.shape)
+
+        # train model
+        clf = CommaAI()
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape)
+
+        datagen = ImageDataGenerator(
+            featurewise_center=False,  # set input mean to 0 over the dataset
+            samplewise_center=False,  # set each sample mean to 0
+            featurewise_std_normalization=False,  # divide inputs by std of the dataset
+            samplewise_std_normalization=False,  # divide each input by its std
+            zca_whitening=False,  # apply ZCA whitening
+            rotation_range=0,  # randomly rotate images in the range (degrees, 0 to 180)
+            width_shift_range=0,  # randomly shift images horizontally (fraction of total width)
+            height_shift_range=0,  # randomly shift images vertically (fraction of total height)
+            horizontal_flip=False,  # randomly flip images
+            vertical_flip=False)  # randomly flip images
+        # featurewise_center=True,
+        # featurewise_std_normalization=True,
+        # rotation_range=20,
+        # width_shift_range=0.2,
+        # height_shift_range=0.2,
+        # horizontal_flip=True)
+
+        # compute quantities required for featurewise normalization
+        # (std, mean, and principal components if ZCA whitening is applied)
+        datagen.fit(X_train)
+        samples_per_epoch = math.floor(len(X_train) / (1. * FLAGS.epochs))
+        history = model.fit_generator(datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size),
+                                      samples_per_epoch=FLAGS.samples_per_epoch,
+                                      nb_epoch=FLAGS.epochs)
+
+    elif train_mode == 2:
+        output_shape = (int(160 / 1), int(320 / 1), 3)
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
+        # img_rows, img_cols = X_train.shape[1], X_train.shape[2]
+
+        print('X_train shape: ', X_train.shape)
+        print('X_val shape:   ', X_val.shape)
+
+        # train model
+        clf = CommaAI()
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape)
+        # samples_per_epoch = math.floor(len(X_train) / (1. * FLAGS.epochs))
+        history = model.fit(X_train, y_train, batch_size=FLAGS.batch_size, nb_epoch=FLAGS.epochs,
+                            validation_data=(X_val, y_val))
+
+    elif train_mode == 3:
+        # train model
+        clf = CommaAI()
+        model = clf.get_model(input_shape=(80, 160, 3), output_shape=(80, 160, 3))
+
+        # this is the augmentation configuration we will use for training
+        datagen = ImageDataGenerator(
+            rescale=1. / 255,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True)
+
+        history = model.fit_generator(
+            datagen.flow_from_directory('data/training/5/IMG', batch_size=32, target_size=(160, 80),
+                                        class_mode='sparse'), samples_per_epoch=len(X_train), nb_epoch=FLAGS.epochs)
     else:
-        raise NotImplementedError
+        output_shape = (int(160 / 2), int(320 / 2), 3)
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
 
-    # train model
-    model.fit(X_train, y_train, nb_epoch=FLAGS.epochs, batch_size=FLAGS.batch_size, validation_data=(X_val, y_val),
-              shuffle=True)
-    model.save()
+        print('X_train shape: ', X_train.shape)
+        print('X_val shape:   ', X_val.shape)
+
+        # train model
+        clf = CommaAI()
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape)
+
+        history = model.fit_generator(gen_train(FLAGS.batch_size),
+                                      nb_epoch=FLAGS.epochs,
+                                      samples_per_epoch=FLAGS.samples_per_epoch,
+                                      nb_val_samples=len(X_val),
+                                      validation_data=gen_val(FLAGS.batch_size),
+                                      verbose=2)
+
+    print(history.history)
+    clf.save()
 
 
 # parses flags and calls the `main` function above

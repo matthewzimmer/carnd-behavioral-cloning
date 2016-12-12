@@ -1,5 +1,5 @@
-CARND_IP = '54.202.207.67'
-INSTANCE_ID = 'i-516ff7c4'
+CARND_IP = '54.200.250.6'
+# INSTANCE_ID = 'i-516ff7c4'
 
 namespace :carnd do
   task :ssh do
@@ -7,7 +7,7 @@ namespace :carnd do
   end
 
   task :pull do
-    sh "ssh -t carnd@#{CARND_IP} 'cd ~/carnd-transfer-learning && git pull'"
+    sh "ssh -t carnd@#{CARND_IP} 'cd ~/carnd-behavioral-cloning && git pull'"
   end
 
   task :train, [:network] => :pull do |t, args|
@@ -19,40 +19,41 @@ namespace :carnd do
     sh 'python drive.py model.json'
   end
 
-  task :start, [:instance_id] do |t, args|
-    args.with_defaults(instance_id: INSTANCE_ID)
-    instance_id = args[:instance_id]
-    sh "aws ec2 start-instances --instance-ids \"#{instance_id}\""
+  task :scp, [:src, :dest] do |t, args|
+    args.with_defaults(dest: '~')
+    host = "carnd@#{CARND_IP}"
+    puts "downloading #{args[:src]} to #{host}:#{args[:dest]}"
+    sh "scp -rp #{args[:src]} #{host}:#{args[:dest]}"
   end
 
-  task :pull, [:instance_id] do |t, args|
-
-  end
-
-  task :stop, [:instance_id] do |t, args|
-    args.with_defaults(instance_id: INSTANCE_ID)
-    instance_id = args[:instance_id]
-    sh "aws ec2 stop-instances --instance-ids \"#{instance_id}\""
-  end
-
-  namespace :scp do
-    task :up, [:src, :dest] do |t, args|
-      args.with_defaults(dest: '~')
-      host = "carnd@#{CARND_IP}"
-      puts "uploading #{args[:src]} to #{host}:#{args[:dest]}"
-      %w(zimpy networks).each do |file_or_dir|
-        sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
-      end
-      unless args[:src].nil?
-        sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{args[:src]} #{host}:#{args[:dest]}"
-      end
-    end
-
-    task :down, [:src, :dest] do |t, args|
-      args.with_defaults(dest: '~')
-      host = "carnd@#{CARND_IP}"
-      puts "downloading #{host}:#{args[:src]} to #{args[:dest]}"
-      sh "scp -rp #{host}:#{args[:src]} #{args[:dest]}"
+  task :rsync, [:src, :dest] do |t, args|
+    args.with_defaults(dest: '~')
+    host = "carnd@#{CARND_IP}"
+    puts "uploading #{args[:src]} to #{host}:#{args[:dest]}"
+    # %w(zimpy networks).each do |file_or_dir|
+    #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
+    # end
+    unless args[:src].nil?
+      sh "rsync -avz #{args[:src]} #{host}:#{args[:dest]}"
     end
   end
+
+  task :down, [:src, :dest] do |t, args|
+    args.with_defaults(dest: '~')
+    host = "carnd@#{CARND_IP}"
+    puts "downloading #{host}:#{args[:src]} to #{args[:dest]}"
+    sh "scp -rp #{host}:#{args[:src]} #{args[:dest]}"
+  end
+
+  # task :start, [:instance_id] do |t, args|
+  #   args.with_defaults(instance_id: INSTANCE_ID)
+  #   instance_id = args[:instance_id]
+  #   sh "aws ec2 start-instances --instance-ids \"#{instance_id}\""
+  # end
+
+  # task :stop, [:instance_id] do |t, args|
+  #   args.with_defaults(instance_id: INSTANCE_ID)
+  #   instance_id = args[:instance_id]
+  #   sh "aws ec2 stop-instances --instance-ids \"#{instance_id}\""
+  # end
 end

@@ -12,6 +12,7 @@ import numpy as np
 import json
 import uuid
 import os
+import time
 
 from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU
 from keras.models import Sequential
@@ -44,15 +45,22 @@ class BaseNetwork:
 
     def __persist(self):
         save_dir = os.path.join(os.path.dirname(__file__), 'data', 'trained')
-        weights_save_path = os.path.join(save_dir, '{}_{}_{}.h5'.format('model', self.__class__.__name__, self.uuid))
-        model_save_path = os.path.join(save_dir, '{}_{}_{}.json'.format('model', self.__class__.__name__, self.uuid))
+        weights_save_path = os.path.join(save_dir, '{}_{}_{}_{}.h5'.format('model', self.__class__.__name__, self.uuid,
+                                                                           time.strftime('%Y%m%d')))
+        model_save_path = os.path.join(save_dir, '{}_{}_{}_{}.json'.format('model', self.__class__.__name__, self.uuid,
+                                                                           time.strftime('%Y%m%d')))
 
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
         self.model.save_weights(weights_save_path)
+        self.model.save_weights('model.h5')
+
+        model_json = self.model.to_json()
+        with open('model.json', 'w') as outfile:
+            json.dump(model_json, outfile)
         with open(model_save_path, 'w') as outfile:
-            json.dump(self.model.to_json(), outfile)
+            json.dump(model_json, outfile)
 
     def __str__(self):
         results = [self.model.summary()]
@@ -204,15 +212,11 @@ class CommaAI(BaseNetwork):
     Downloaded from https://github.com/commaai/research/blob/master/train_steering_model.py
     """
 
-    def fit(self, X_train, y_train, nb_epoch=12, batch_size=128, validation_data=None, shuffle=True, verbose=1):
-        img_rows, img_cols = X_train.shape[1], X_train.shape[2]
-
-        ch, row, col = 3, img_rows, img_cols  # camera format
-
+    def get_model(self, input_shape, output_shape):
         model = Sequential()
         model.add(Lambda(lambda x: x / 127.5 - 1.,
-                         input_shape=X_train.shape[1:],
-                         output_shape=X_train.shape[1:]))
+                         input_shape=input_shape,
+                         output_shape=output_shape))
         model.add(Convolution2D(16, 8, 8, subsample=(4, 4), border_mode="same"))
         model.add(ELU())
         model.add(Convolution2D(32, 5, 5, subsample=(2, 2), border_mode="same"))
@@ -227,27 +231,25 @@ class CommaAI(BaseNetwork):
         model.add(Dense(1))
 
         # print information about the model itself
-        if verbose:
-            model.summary()
+        model.summary()
 
         # Compile and train the model.
         model.compile(optimizer='adam', loss='mse')
 
-        history = model.fit(X_train, y_train,
-                            batch_size=batch_size, nb_epoch=nb_epoch,
-                            verbose=verbose, validation_data=validation_data)
-
-        print(history.history)
+        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
+        # print(history.history)
 
         self.model = model
 
+        return self.model
+
 
 class VGG16(BaseNetwork):
-    def fit(self, X_train, y_train, nb_epoch=12, batch_size=128, validation_data=None, shuffle=True):
+    def get_model(self, input_shape, output_shape):
         model = Sequential()
 
         # TODO: Ensure to provide proper input_shape
-        model.add(ZeroPadding2D((1, 1), input_shape=(3, 224, 224)))
+        model.add(ZeroPadding2D((1, 1), input_shape=input_shape))
         model.add(Convolution2D(64, 3, 3, activation='relu'))
         model.add(ZeroPadding2D((1, 1)))
         model.add(Convolution2D(64, 3, 3, activation='relu'))
@@ -289,6 +291,9 @@ class VGG16(BaseNetwork):
         model.add(Dense(4096, activation='relu'))
         model.add(Dropout(0.5))
         model.add(Dense(1000, activation='softmax'))
+        model.add(Dropout(.5))
+        model.add(ELU())
+        model.add(Dense(1))
 
         # if weights_path:
         #     model.load_weights(weights_path)
@@ -299,14 +304,12 @@ class VGG16(BaseNetwork):
         model.summary()
 
         # Compile and train the model.
-        model.compile(optimizer='adam',
-                      loss='mse',
-                      metrics=['accuracy'])
+        model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
-        history = model.fit(X_train, y_train,
-                            batch_size=batch_size, nb_epoch=nb_epoch,
-                            verbose=1, validation_data=validation_data)
+        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=1, validation_data=validation_data)
 
-        print(history.history)
+        # print(history.history)
 
         self.model = model
+
+        return self.model

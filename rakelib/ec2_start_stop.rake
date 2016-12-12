@@ -1,4 +1,3 @@
-CARND_IP = '54.202.207.67'
 INSTANCE_ID = 'i-516ff7c4'
 
 namespace :carnd do
