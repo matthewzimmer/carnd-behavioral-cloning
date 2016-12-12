@@ -14,6 +14,7 @@ import uuid
 import os
 import time
 
+from keras.engine import Input
 from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU
 from keras.models import Sequential
 
@@ -53,14 +54,14 @@ class BaseNetwork:
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        self.model.save_weights(weights_save_path)
+        # self.model.save_weights(weights_save_path)
         self.model.save_weights('model.h5')
 
         model_json = self.model.to_json()
         with open('model.json', 'w') as outfile:
             json.dump(model_json, outfile)
-        with open(model_save_path, 'w') as outfile:
-            json.dump(model_json, outfile)
+            # with open(model_save_path, 'w') as outfile:
+            #     json.dump(model_json, outfile)
 
     def __str__(self):
         results = [self.model.summary()]
@@ -214,7 +215,9 @@ class CommaAI(BaseNetwork):
 
     def get_model(self, input_shape, output_shape):
         model = Sequential()
-        model.add(Lambda(lambda x: x / 127.5 - 1.,
+        # model.add(Input(input_shape=input_shape, output_shape=output_shape))
+        # model.add(Lambda(lambda x: x / 127.5 - 1.,
+        model.add(Lambda(lambda x: x / 1.,
                          input_shape=input_shape,
                          output_shape=output_shape))
         model.add(Convolution2D(16, 8, 8, subsample=(4, 4), border_mode="same"))
@@ -226,6 +229,106 @@ class CommaAI(BaseNetwork):
         model.add(Dropout(.2))
         model.add(ELU())
         model.add(Dense(512))
+        model.add(Dropout(.5))
+        model.add(Dense(512))
+        model.add(Dropout(.5))
+        model.add(Dense(128))
+        model.add(Dropout(.5))
+        model.add(ELU())
+        model.add(Dense(1))
+
+        # print information about the model itself
+        model.summary()
+
+        # Compile and train the model.
+        model.compile(optimizer='adam', loss='mse')
+
+        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
+        # print(history.history)
+
+        self.model = model
+
+        return self.model
+
+
+class MyComma(BaseNetwork):
+    def get_model(self, input_shape, output_shape):
+        model = Sequential()
+        model.add(Convolution2D(32, 3, 3, border_mode="same", input_shape=input_shape))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+        model.add(Convolution2D(64, 3, 3, border_mode="same", activation='relu'))
+        model.add(Flatten())
+        model.add(Dense(64))
+        model.add(ELU())
+        model.add(Dense(1))
+
+        # print information about the model itself
+        model.summary()
+
+        # Compile and train the model.
+        model.compile(optimizer='adam', loss='mse')
+
+        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
+        # print(history.history)
+
+        self.model = model
+
+        return self.model
+
+class MyVGG16(BaseNetwork):
+    """
+    Downloaded from https://github.com/commaai/research/blob/master/train_steering_model.py
+    """
+
+    def get_model(self, input_shape, output_shape):
+        model = Sequential()
+        # model.add(Input(input_shape=input_shape, output_shape=output_shape))
+        # model.add(Lambda(lambda x: x / 127.5 - 1.,
+        # model.add(Lambda(lambda x: x / 1.,
+        #                  input_shape=input_shape,
+        #                  output_shape=output_shape))
+        model.add(ZeroPadding2D((1, 1), input_shape=input_shape))
+        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(ZeroPadding2D((1, 1)))
+        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+
+        model.add(Flatten())
+        model.add(Dense(4096, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(4096, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(1000, activation='softmax'))
         model.add(Dropout(.5))
         model.add(ELU())
         model.add(Dense(1))

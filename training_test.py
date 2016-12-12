@@ -8,10 +8,12 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils import np_utils
 import math
 import cv2
-from scipy import misc
+import pickle
+from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI
+from training import TrainTrackA, CommaAI, MyComma
+from zimpy.camera_preprocessor import preprocess_image
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
 
 flags = tf.app.flags
@@ -23,6 +25,7 @@ flags.DEFINE_integer('epochs', 5, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 256, "The batch size.")
 flags.DEFINE_integer('samples_per_epoch', 256, "The number of samples per epoch during training.")
 flags.DEFINE_integer('algo_mode', 1, "The algorithm to train against.")
+flags.DEFINE_boolean('repickle', True, "Whether to regenerage the train.p file of training camera images.")
 
 train_samples_seen = []
 X_train, y_train, X_val, y_val = None, None, None, None
@@ -74,20 +77,20 @@ def gen_val(batch_size=16):
             yield X_val[start_i:end_i], y_val[start_i:end_i]
 
 
-def load_track_data(output_shape=None, repickle=False):
-    pickle_file = 'train.p'
+def load_track_data(output_shape, repickle=False):
+    pickle_file = os.path.join(os.path.dirname(__file__), 'train.p')
     if repickle == True or not os.path.isfile(pickle_file):
         X_train, y_train = [], []
         train_data_paths = []
+        # train_data_paths.append('data/training/1')
         train_data_paths.append('.')
-        train_data_paths.append('data/training/1')
         # train_data_paths.append('data/training/2')
-        train_data_paths.append('data/training/3')
-        train_data_paths.append('data/training/4')
-        train_data_paths.append('data/training/5')
-        train_data_paths.append('data/training/6')
-        train_data_paths.append('data/training/7')
-        train_data_paths.append('data/training/8')
+        # train_data_paths.append('data/training/3')
+        # train_data_paths.append('data/training/4')
+        # train_data_paths.append('data/training/5')
+        # train_data_paths.append('data/training/6')
+        # train_data_paths.append('data/training/7')
+        # train_data_paths.append('data/training/8')
 
         for train_data_path in train_data_paths:
             drive_log_path = train_data_path + '/driving_log.csv'
@@ -95,35 +98,55 @@ def load_track_data(output_shape=None, repickle=False):
                 with open(train_data_path + '/driving_log.csv', 'r') as drive_logs:
                     observations = csv.reader(drive_logs, delimiter=',')
                     for observation in observations:
-                        image_path = observation[0]
-                        if os.path.isfile(observation[0]):
-                            orig_image = misc.imread(observation[0])
-                            out_image = orig_image
-                            if output_shape is not None:
-                                # print('down sampling original image to ', output_shape)
-                                out_image = cv2.resize(orig_image, (output_shape[1], output_shape[0]),
-                                                       interpolation=cv2.INTER_AREA)
+                        c_image_path = observation[0].strip()
+                        l_image_path = observation[1].strip()
+                        r_image_path = observation[2].strip()
+                        steering_angle = float(observation[3])
+
+                        # valid_images = [c_image_path]
+                        valid_images = [c_image_path, l_image_path, r_image_path]
+                        # valid_images = [l_image_path, r_image_path]
+
+                        # if steering_angle < 0:
+                        #     valid_images.append(l_image_path)
+                        # elif steering_angle > 0:
+                        #     valid_images.append(r_image_path)
+
+                        for image_path in valid_images:
+                            if not os.path.isfile(image_path):
+                                continue
+
+                            orig_image = misc.imread(image_path)
+                            out_image = preprocess_image(orig_image, output_shape)
                             X_train.append(out_image)
-                            y_train.append(float(observation[3]))
-                            # else:
-                            #     print(' image not found: ', image_path)
+                            y_train.append(steering_angle)
+                            # if not math.isclose(steering_angle, 0.0) and random.random() < 0.5:
+                            if random.random() < 0.5:
+                                X_train.append(np.fliplr(out_image))
+                                y_train.append(-1 * steering_angle)
 
         # Split some of the training data into a validation dataset.
         X_train, X_val, y_train, y_val = train_test_split(
             X_train,
             y_train,
-            test_size=0.2,
+            test_size=0.15,
             random_state=0)
 
         X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train), np.array(X_val), np.array(y_val)
         X_train = X_train.astype('float32')
         X_val = X_val.astype('float32')
 
-        TrainedDataSerializer.save_data(
-            data={'X_train': X_train, 'y_train': y_train, 'X_val': X_val, 'y_val': y_val},
-            pickle_file=pickle_file,
-            overwrite=True
-        )
+        # TrainedDataSerializer.save_data(
+        #     data={'X_train': X_train, 'y_train': y_train, 'X_val': X_val, 'y_val': y_val},
+        #     pickle_file=pickle_file,
+        #     overwrite=True
+        # )
+
+        # with open(pickle_file, 'wb') as pfile:
+        #     pickle.dump(
+        #         {'X_train': X_train, 'y_train': y_train, 'X_val': X_val, 'y_val': y_val},
+        #         pfile, pickle.HIGHEST_PROTOCOL)
+
     else:
         data = TrainedDataSerializer.reload_data(pickle_file=pickle_file)
         X_train, y_train, X_val, y_val = data['X_train'], data['y_train'], data['X_val'], data['y_val']
@@ -150,7 +173,7 @@ def main(_):
     train_mode = FLAGS.algo_mode
     if train_mode == 1:
         output_shape = (int(160 / 3), int(320 / 3), 3)
-        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
         # img_rows, img_cols = X_train.shape[1], X_train.shape[2]
 
         print('X_train shape: ', X_train.shape)
@@ -183,19 +206,24 @@ def main(_):
         datagen.fit(X_train)
         samples_per_epoch = math.floor(len(X_train) / (1. * FLAGS.epochs))
         history = model.fit_generator(datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size),
-                                      samples_per_epoch=FLAGS.samples_per_epoch,
+                                      samples_per_epoch=len(X_train),
                                       nb_epoch=FLAGS.epochs)
 
     elif train_mode == 2:
-        output_shape = (int(160 / 1), int(320 / 1), 3)
-        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
-        # img_rows, img_cols = X_train.shape[1], X_train.shape[2]
+        # output_shape = (16, 32, 3)
+        # output_shape = (160, 320, 3)
+        output_shape = (80, 160, 3)
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
+        img_rows, img_cols = X_train.shape[1], X_train.shape[2]
+        output_shape = (img_rows, img_cols, 3)
 
         print('X_train shape: ', X_train.shape)
         print('X_val shape:   ', X_val.shape)
 
         # train model
-        clf = CommaAI()
+        # clf = CommaAI()
+        # clf = MyVGG16()
+        clf = MyComma()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape)
         # samples_per_epoch = math.floor(len(X_train) / (1. * FLAGS.epochs))
         history = model.fit(X_train, y_train, batch_size=FLAGS.batch_size, nb_epoch=FLAGS.epochs,
@@ -218,7 +246,7 @@ def main(_):
                                         class_mode='sparse'), samples_per_epoch=len(X_train), nb_epoch=FLAGS.epochs)
     else:
         output_shape = (int(160 / 2), int(320 / 2), 3)
-        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2])
+        X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
 
         print('X_train shape: ', X_train.shape)
         print('X_val shape:   ', X_val.shape)
@@ -229,7 +257,7 @@ def main(_):
 
         history = model.fit_generator(gen_train(FLAGS.batch_size),
                                       nb_epoch=FLAGS.epochs,
-                                      samples_per_epoch=FLAGS.samples_per_epoch,
+                                      samples_per_epoch=len(X_train),
                                       nb_val_samples=len(X_val),
                                       validation_data=gen_val(FLAGS.batch_size),
                                       verbose=2)

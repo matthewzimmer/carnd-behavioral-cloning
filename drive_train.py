@@ -2,7 +2,7 @@ import argparse
 import base64
 import json
 import cv2
-
+import os
 import numpy as np
 import socketio
 import eventlet
@@ -15,6 +15,8 @@ from io import BytesIO
 
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
+
+from zimpy.camera_preprocessor import preprocess_image, flip_image
 
 sio = socketio.Server()
 app = Flask(__name__)
@@ -34,15 +36,18 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
-    # image_array = cv2.resize(image_array, (int(320/2), int(160/2)), interpolation=cv2.INTER_AREA)
-    transformed_image_array = image_array[None, :, :, :]
-    # TODO: Resize to (40, 80)
+    image_array = preprocess_image(image_array)
+    # transformed_image_array = image_array
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
-    steering_angle = float(model.predict(transformed_image_array, batch_size=1))
+    normal_steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
+    flipped_steering_angle = float(model.predict(np.fliplr(image_array)[None, :, :, :], batch_size=1))
+    mean_steering_angle = np.mean([normal_steering_angle, flipped_steering_angle])
+    print('mean steering angle', mean_steering_angle)
+    steering_angle = mean_steering_angle
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.2
-    print(steering_angle, throttle)
-    send_control(steering_angle, throttle)
+    print(steering_angle, mean_steering_angle, throttle)
+    send_control(mean_steering_angle, throttle)
 
 
 @sio.on('connect')
@@ -64,6 +69,9 @@ if __name__ == '__main__':
                         help='Path to model definition json. Model weights should be on the same path.')
     args = parser.parse_args()
     print(args)
+
+    os.system("python training_test.py --epochs 2 --batch_size 32 --algo_mode 2 --repickle True")
+
     with open(args.model, 'r') as jfile:
         the_json = json.load(jfile)
         print(json.loads(the_json))

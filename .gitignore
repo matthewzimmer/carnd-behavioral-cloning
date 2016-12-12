@@ -93,3 +93,5 @@ ENV/
 Behavioral Cloning.app
 data
 model.*
+IMG
+driving_log.csv

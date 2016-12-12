@@ -10,7 +10,7 @@ class TrainedDataSerializer:
             pickle_file,
             overwrite=False
     ):
-        pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', pickle_file)
+        # pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', pickle_file)
         os.makedirs(os.path.dirname(pickle_file), exist_ok=True)
         if overwrite or not os.path.isfile(pickle_file):
             print('Saving data to pickle file...')
@@ -29,8 +29,8 @@ class TrainedDataSerializer:
 
     @staticmethod
     def reload_data(pickle_file):
-        pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', pickle_file)
-        os.makedirs(os.path.dirname(pickle_file), exist_ok=True)
+        # pickle_file = os.path.join(os.path.dirname(__file__), '..', 'data', pickle_file)
+        # os.makedirs(os.path.dirname(pickle_file), exist_ok=True)
         # Reload the data
         with open(pickle_file, 'rb') as f:
             pickle_data = pickle.load(f)
