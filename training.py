@@ -62,8 +62,6 @@ class BaseNetwork:
 
 	def __persist(self):
 		save_dir = os.path.join(os.path.dirname(__file__), 'data', 'trained')
-		# weights_save_path = os.path.join(save_dir, '{}_{}_{}_{}.h5'.format('model', self.__class__.__name__, self.uuid, time.strftime('%Y%m%d')))
-		# model_save_path = os.path.join(save_dir, '{}_{}_{}_{}.json'.format('model', self.__class__.__name__, self.uuid, time.strftime('%Y%m%d')))
 		weights_save_path = os.path.join(save_dir, '{}_{}.h5'.format('model', self.__class__.__name__))
 		model_save_path = os.path.join(save_dir, '{}_{}.json'.format('model', self.__class__.__name__))
 
@@ -71,11 +69,11 @@ class BaseNetwork:
 			os.makedirs(save_dir)
 
 		self.model.save_weights(weights_save_path)
-		self.model.save_weights('model.h5')
+		# self.model.save_weights('model.h5')
 
 		model_json = self.model.to_json()
-		with open('model.json', 'w') as outfile:
-			json.dump(model_json, outfile)
+		# with open('model.json', 'w') as outfile:
+		# 	json.dump(model_json, outfile)
 		with open(model_save_path, 'w') as outfile:
 			json.dump(model_json, outfile)
 

@@ -94,7 +94,7 @@ def load_track_data(output_shape, repickle=False):
 		drive_log_path = './driving_log.csv'
 		if os.path.isfile(drive_log_path):
 			with open(drive_log_path, 'r') as drive_logs:
-				has_header = csv.Sniffer().has_header(drive_logs.read(1024))
+				has_header = csv.Sniffer().has_header(drive_logs.read(1024*10))
 				drive_logs.seek(0)  # rewind
 				incsv = csv.reader(drive_logs)
 				if has_header:
