@@ -71,7 +71,7 @@ if __name__ == '__main__':
     print(args)
 
     # os.system("python training_test.py --epochs 2 --batch_size 128 --algo_mode 2 --repickle True")
-    os.system("python training_test.py --epochs 5 --batch_size 128 --algo_mode 3 --repickle True")
+    # os.system("python training_test.py --epochs 5 --batch_size 128 --algo_mode 3 --repickle True")
 
     with open(args.model, 'r') as jfile:
         the_json = json.load(jfile)

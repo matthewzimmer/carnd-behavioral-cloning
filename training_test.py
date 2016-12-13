@@ -12,7 +12,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet
+from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet, Nvidia
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
 
@@ -26,6 +26,7 @@ flags.DEFINE_integer('batch_size', 256, "The batch size.")
 flags.DEFINE_integer('samples_per_epoch', 256, "The number of samples per epoch during training.")
 flags.DEFINE_integer('algo_mode', 1, "The algorithm to train against.")
 flags.DEFINE_boolean('repickle', True, "Whether to regenerage the train.p file of training camera images.")
+flags.DEFINE_float('lr', 0.0001, "Optimizer learning rate.")
 
 train_samples_seen = []
 X_train, y_train, X_val, y_val = None, None, None, None
@@ -83,7 +84,7 @@ def load_track_data(output_shape, repickle=False):
 		X_train, y_train = [], []
 		train_data_paths = []
 		# train_data_paths.append('data/training/1')
-		# train_data_paths.append('data/training/center_line')
+		train_data_paths.append('data/training/center_line')
 		train_data_paths.append('.')
 		# train_data_paths.append('data/training/2')
 		# train_data_paths.append('data/training/3')
@@ -249,10 +250,8 @@ def main(_):
 		print('X_val shape:   ', X_val.shape)
 
 		# train model
-		# clf = CommaAI()
-		# clf = MyVGG16()
-		clf = MyComma()
-		model = clf.get_model(input_shape=output_shape, output_shape=output_shape)
+		clf = Nvidia()
+		model = clf.get_model(input_shape=output_shape, output_shape=output_shape, learning_rate=FLAGS.lr)
 		history = model.fit(X_train, y_train, batch_size=FLAGS.batch_size, nb_epoch=FLAGS.epochs,
 		                    validation_data=(X_val, y_val))
 
