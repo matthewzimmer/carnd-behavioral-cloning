@@ -92,7 +92,6 @@ ENV/
 .idea
 Behavioral Cloning.app
 data/training
-model.*
 IMG
 driving_log.csv
 *.app

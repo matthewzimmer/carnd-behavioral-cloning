@@ -56,7 +56,7 @@ class BaseNetwork:
 				the_json = json.load(jfile)
 				print(json.loads(the_json))
 				model = model_from_json(the_json)
-				model.compile(optimizer=optimizer, loss=loss)
+				model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 			if os.path.exists(weights_save_path):
 				model.load_weights(weights_save_path)
 		return model
@@ -246,8 +246,7 @@ class SimpleConvnet(BaseNetwork):
 		model.summary()
 
 		# Compile and train the model.
-		model.compile(optimizer='adam', loss='mse',
-		              metrics=['accuracy'])
+		model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 		# history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
 		# print(history.history)
@@ -288,7 +287,7 @@ class CommaAI(BaseNetwork):
 		model.summary()
 
 		# Compile and train the model.
-		model.compile(optimizer='adam', loss='mse')
+		model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 		# history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
 		# print(history.history)
@@ -320,11 +319,14 @@ class Nvidia(BaseNetwork):
 			model.add(Flatten())
 			model.add(ELU())
 			model.add(Dense(1164))
+			model.add(Dropout(.5))
 			model.add(Dense(100))
+			model.add(Dropout(.5))
 			model.add(Dense(50))
+			model.add(Dropout(.5))
 			model.add(ELU())
 			model.add(Dense(1))
-			model.compile(optimizer=optimizer, loss=loss)
+			model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
 		model.summary()
 		self.model = model
@@ -350,7 +352,7 @@ class MyComma(BaseNetwork):
 		model.summary()
 
 		# Compile and train the model.
-		model.compile(optimizer='adam', loss='mse')
+		model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 		# history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
 		# print(history.history)
@@ -422,7 +424,7 @@ class MyVGG16(BaseNetwork):
 		model.summary()
 
 		# Compile and train the model.
-		model.compile(optimizer='adam', loss='mse')
+		model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
 		# history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
 		# print(history.history)

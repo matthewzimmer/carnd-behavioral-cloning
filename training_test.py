@@ -84,7 +84,7 @@ def load_track_data(output_shape, repickle=False):
 		X_train, y_train = [], []
 		train_data_paths = []
 		# train_data_paths.append('data/training/1')
-		train_data_paths.append('data/training/center_line')
+		# train_data_paths.append('data/training/center_line')
 		train_data_paths.append('.')
 		# train_data_paths.append('data/training/2')
 		# train_data_paths.append('data/training/3')
