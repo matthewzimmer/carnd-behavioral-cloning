@@ -312,7 +312,7 @@ def main(_):
 	print(history.history)
 	clf.save()
 
-	delete_training_images()
+	# delete_training_images()
 
 
 # parses flags and calls the `main` function above
