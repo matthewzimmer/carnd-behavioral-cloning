@@ -78,63 +78,55 @@ def gen_val(batch_size=16):
 			yield X_val[start_i:end_i], y_val[start_i:end_i]
 
 
+def move_track_recordings(output_shape, repickle=False):
+	drive_log_path = './driving_log.csv'
+	img_path = './IMG'
+
 def load_track_data(output_shape, repickle=False):
 	pickle_file = os.path.join(os.path.dirname(__file__), 'train.p')
 	if repickle == True or not os.path.isfile(pickle_file):
 		X_train, y_train = [], []
-		train_data_paths = []
-		# train_data_paths.append('data/training/1')
-		# train_data_paths.append('data/training/center_line')
-		train_data_paths.append('.')
-		# train_data_paths.append('data/training/2')
-		# train_data_paths.append('data/training/3')
-		# train_data_paths.append('data/training/4')
-		# train_data_paths.append('data/training/5')
-		# train_data_paths.append('data/training/6')
-		# train_data_paths.append('data/training/7')
-		# train_data_paths.append('data/training/8')
 
-		for train_data_path in train_data_paths:
-			drive_log_path = train_data_path + '/driving_log.csv'
-			if os.path.isfile(drive_log_path):
-				with open(train_data_path + '/driving_log.csv', 'r') as drive_logs:
-					observations = csv.reader(drive_logs, delimiter=',')
-					for observation in observations:
-						c_image_path = observation[0].strip()
-						l_image_path = observation[1].strip()
-						r_image_path = observation[2].strip()
-						steering_angle = float(observation[3])
+		drive_log_path = './driving_log.csv'
+		if os.path.isfile(drive_log_path):
+			with open(drive_log_path, 'r') as drive_logs:
+				observations = csv.reader(drive_logs, delimiter=',')
+				for observation in observations:
+					c_image_path = observation[0].strip()
+					l_image_path = observation[1].strip()
+					r_image_path = observation[2].strip()
+					steering_angle = float(observation[3])
 
-						valid_images = [c_image_path]
+					valid_images = [c_image_path]
 
+					# if not math.isclose(steering_angle, 0.0):
+					#     valid_images = [c_image_path]
+					# valid_images = [c_image_path, l_image_path, r_image_path]
+					# valid_images = [l_image_path, r_image_path]
+
+					# if steering_angle < 0:
+					#     valid_images.append(l_image_path)
+					# elif steering_angle > 0:
+					#     valid_images.append(r_image_path)
+
+					for image_path in valid_images:
+						if not os.path.isfile(image_path):
+							continue
+
+						orig_image = misc.imread(image_path)
+						out_image = preprocess_image(orig_image, output_shape)
+						X_train.append(out_image)
+						y_train.append(steering_angle)
+						# if not math.isclose(steering_angle, 0.0) and random.random() < 0.5:
 						# if not math.isclose(steering_angle, 0.0):
-						#     valid_images = [c_image_path]
-						# valid_images = [c_image_path, l_image_path, r_image_path]
-						# valid_images = [l_image_path, r_image_path]
-
-						# if steering_angle < 0:
-						#     valid_images.append(l_image_path)
-						# elif steering_angle > 0:
-						#     valid_images.append(r_image_path)
-
-						for image_path in valid_images:
-							if not os.path.isfile(image_path):
-								continue
-
-							orig_image = misc.imread(image_path)
-							out_image = preprocess_image(orig_image, output_shape)
-							X_train.append(out_image)
-							y_train.append(steering_angle)
-							# if not math.isclose(steering_angle, 0.0) and random.random() < 0.5:
+						if steering_angle > 0.0 or steering_angle < 0.0:
+						# if True:  # random.random() < 0.5:
+							X_train.append(np.fliplr(out_image))
+							y_train.append(-1 * steering_angle)
 							# if not math.isclose(steering_angle, 0.0):
-							if steering_angle > 0.0 or steering_angle < 0.0:
-							# if True:  # random.random() < 0.5:
-								X_train.append(np.fliplr(out_image))
-								y_train.append(-1 * steering_angle)
-								# if not math.isclose(steering_angle, 0.0):
-								#     y_train.append(-1 * steering_angle)
-								# else:
-								#     y_train.append(steering_angle)
+							#     y_train.append(-1 * steering_angle)
+							# else:
+							#     y_train.append(steering_angle)
 
 		# Split some of the training data into a validation dataset.
 		X_train, X_val, y_train, y_val = train_test_split(
