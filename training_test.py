@@ -1,5 +1,7 @@
 import os
 import csv
+import shutil
+
 import tensorflow as tf
 import numpy as np
 from keras.applications import VGG16
@@ -12,7 +14,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet, Nvidia
+from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet, Nvidia, Udacity
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
 
@@ -78,9 +80,11 @@ def gen_val(batch_size=16):
 			yield X_val[start_i:end_i], y_val[start_i:end_i]
 
 
-def move_track_recordings(output_shape, repickle=False):
+def delete_training_images():
 	drive_log_path = './driving_log.csv'
 	img_path = './IMG'
+	shutil.rmtree(img_path)
+	os.remove(drive_log_path)
 
 def load_track_data(output_shape, repickle=False):
 	pickle_file = os.path.join(os.path.dirname(__file__), 'train.p')
@@ -282,9 +286,28 @@ def main(_):
 		                              nb_val_samples=len(X_val),
 		                              validation_data=gen_val(FLAGS.batch_size),
 		                              verbose=2)
+	elif train_mode == 6:
+		output_shape = (80, 160, 3)
+		X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
+		img_rows, img_cols = X_train.shape[1], X_train.shape[2]
+		output_shape = (img_rows, img_cols, 3)
+
+		print('X_train shape: ', X_train.shape)
+		print('X_val shape:   ', X_val.shape)
+
+		# train model
+		clf = Udacity()
+		model = clf.get_model(input_shape=output_shape, output_shape=output_shape, learning_rate=FLAGS.lr)
+		history = model.fit(X_train, y_train, batch_size=FLAGS.batch_size, nb_epoch=FLAGS.epochs,
+		                    validation_data=(X_val, y_val))
+
+		# predict 3 images and compare accuracy
+		predict_images(model)
 
 	print(history.history)
 	clf.save()
+
+	delete_training_images()
 
 
 # parses flags and calls the `main` function above

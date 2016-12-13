@@ -33,7 +33,6 @@ class BaseNetwork:
 	def save(self):
 		self.__persist()
 
-
 	def serialize(self, data={}):
 		if self.__configured:
 			return {
@@ -61,7 +60,6 @@ class BaseNetwork:
 				model.load_weights(weights_save_path)
 		return model
 
-
 	def __persist(self):
 		save_dir = os.path.join(os.path.dirname(__file__), 'data', 'trained')
 		# weights_save_path = os.path.join(save_dir, '{}_{}_{}_{}.h5'.format('model', self.__class__.__name__, self.uuid, time.strftime('%Y%m%d')))
@@ -79,7 +77,7 @@ class BaseNetwork:
 		with open('model.json', 'w') as outfile:
 			json.dump(model_json, outfile)
 		with open(model_save_path, 'w') as outfile:
-		    json.dump(model_json, outfile)
+			json.dump(model_json, outfile)
 
 	def __str__(self):
 		results = [self.model.summary()]
@@ -298,10 +296,13 @@ class CommaAI(BaseNetwork):
 
 
 class Nvidia(BaseNetwork):
-	def get_model(self, input_shape, output_shape, learning_rate=0.0001):
+	def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=True):
+		model = None
+
 		optimizer = Adam(lr=learning_rate)
 		loss = 'mse'
-		model = self.restore(optimizer=optimizer, loss=loss)
+		if use_weights:
+			model = self.restore(optimizer=optimizer, loss=loss)
 		if model is None:
 			model = Sequential()
 			model.add(Lambda(lambda x: x / 127.5 - 1.,
@@ -334,6 +335,16 @@ class Nvidia(BaseNetwork):
 		return self.model
 
 
+class Udacity(BaseNetwork):
+	def get_model(self, input_shape=None, output_shape=None, learning_rate=0.0001):
+		self.model = self.restore(optimizer=Adam(lr=learning_rate), loss='mse')
+		if self.model is None:
+			clf = Nvidia()
+			self.model = clf.get_model(input_shape, output_shape, learning_rate, use_weights=False)
+		self.model.summary()
+		return self.model
+
+
 class MyComma(BaseNetwork):
 	def get_model(self, input_shape, output_shape):
 		model = Sequential()
@@ -342,7 +353,6 @@ class MyComma(BaseNetwork):
 		model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 		model.add(Convolution2D(64, 3, 3, border_mode="same", activation='relu'))
 		model.add(Flatten())
-
 
 		model.add(Dense(64))
 		model.add(ELU())
