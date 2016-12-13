@@ -94,6 +94,11 @@ def load_track_data(output_shape, repickle=False):
 		drive_log_path = './driving_log.csv'
 		if os.path.isfile(drive_log_path):
 			with open(drive_log_path, 'r') as drive_logs:
+				has_header = csv.Sniffer().has_header(drive_logs.read(1024))
+				drive_logs.seek(0)  # rewind
+				incsv = csv.reader(drive_logs)
+				if has_header:
+					next(incsv)  # skip header row
 				observations = csv.reader(drive_logs, delimiter=',')
 				for observation in observations:
 					c_image_path = observation[0].strip()

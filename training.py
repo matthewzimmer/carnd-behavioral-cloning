@@ -259,7 +259,7 @@ class CommaAI(BaseNetwork):
 	Downloaded from https://github.com/commaai/research/blob/master/train_steering_model.py
 	"""
 
-	def get_model(self, input_shape, output_shape):
+	def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=False):
 		model = Sequential()
 		model.add(Lambda(lambda x: x / 127.5 - 1.,
 		                 input_shape=input_shape,
@@ -339,7 +339,8 @@ class Udacity(BaseNetwork):
 	def get_model(self, input_shape=None, output_shape=None, learning_rate=0.0001):
 		self.model = self.restore(optimizer=Adam(lr=learning_rate), loss='mse')
 		if self.model is None:
-			clf = Nvidia()
+			# clf = Nvidia()
+			clf = CommaAI()
 			self.model = clf.get_model(input_shape, output_shape, learning_rate, use_weights=False)
 		self.model.summary()
 		return self.model
