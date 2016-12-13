@@ -47,7 +47,7 @@ def telemetry(sid, data):
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.2
     print(steering_angle, mean_steering_angle, throttle)
-    send_control(mean_steering_angle, throttle)
+    send_control(steering_angle, throttle)
 
 
 @sio.on('connect')
@@ -70,7 +70,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-    os.system("python training_test.py --epochs 2 --batch_size 32 --algo_mode 2 --repickle True")
+    # os.system("python training_test.py --epochs 2 --batch_size 128 --algo_mode 2 --repickle True")
+    os.system("python training_test.py --epochs 5 --batch_size 128 --algo_mode 3 --repickle True")
 
     with open(args.model, 'r') as jfile:
         the_json = json.load(jfile)

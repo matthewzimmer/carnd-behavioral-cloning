@@ -95,3 +95,4 @@ data
 model.*
 IMG
 driving_log.csv
+*.app

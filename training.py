@@ -251,6 +251,36 @@ class CommaAI(BaseNetwork):
         return self.model
 
 
+class SimpleConvnet(BaseNetwork):
+    def get_model(self, input_shape, output_shape):
+        model = Sequential(name='input')
+        model.add(Convolution2D(64, 3, 3, border_mode='same', input_shape=input_shape))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Convolution2D(128, 3, 3, border_mode="same", activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Flatten())
+        model.add(Dense(1024, activation='relu'))
+        model.add(Dense(1024, activation='relu'))
+        model.add(Dense(512, activation='relu'))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dropout(0.5))
+        # model.add(Activation('relu'))
+        model.add(Dense(1))
+
+        # print information about the model itself
+        model.summary()
+
+        # Compile and train the model.
+        model.compile(optimizer='adam', loss='mse',
+                      metrics=['accuracy'])
+
+        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
+        # print(history.history)
+
+        self.model = model
+
+        return self.model
+
 class MyComma(BaseNetwork):
     def get_model(self, input_shape, output_shape):
         model = Sequential()
