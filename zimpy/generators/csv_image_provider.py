@@ -44,37 +44,37 @@ def batch_generator(X, Y, label, batch_size=32, output_shape=None):
                 if steering_angle < -0.01:
                     chance = random.random()
                     if chance > 0.75:
-                        image_path = X[j].split(':')[1]
+                        image_path = X[j].split(':')[2]
                         steering_angle *= 3.0
                     else:
                         if chance > 0.5:
-                            image_path = X[j].split(':')[1]
+                            image_path = X[j].split(':')[2]
                             steering_angle *= 2.0
                         else:
                             if chance > 0.25:
-                                image_path = X[j].split(':')[0]
+                                image_path = X[j].split(':')[1]
                                 steering_angle *= 1.5
                             else:
-                                image_path = X[j].split(':')[0]
+                                image_path = X[j].split(':')[1]
                 else:
                     if steering_angle > 0.01:
                         chance = random.random()
                         if chance > 0.75:
-                            image_path = X[j].split(':')[2]
+                            image_path = X[j].split(':')[0]
                             steering_angle *= 3.0
                         else:
                             if chance > 0.5:
-                                image_path = X[j].split(':')[2]
+                                image_path = X[j].split(':')[0]
                                 steering_angle *= 2.0
                             else:
                                 if chance > 0.25:
-                                    image_path = X[j].split(':')[0]
+                                    image_path = X[j].split(':')[1]
                                     steering_angle *= 1.5
                                 else:
-                                    image_path = X[j].split(':')[0]
+                                    image_path = X[j].split(':')[1]
                     else:
-                        if random.random() > 0.5:
-                            image_path = X[j].split(':')[0]
+                        # if random.random() > 0.5:
+                        image_path = X[j].split(':')[0]
 
                 if image_path is not None:
                     # print(image_path)
