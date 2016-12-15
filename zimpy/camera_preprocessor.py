@@ -2,11 +2,12 @@ import cv2
 import numpy as np
 from scipy import misc
 
+
 def flip_image(image_array, steering_angle):
     return np.fliplr(image_array), -steering_angle
 
 
-def preprocess_image(image_array, output_shape=(160, 320)):
+def preprocess_image(image_array):
     # hard-code this so drive.py and training_test.py use same size (refactor later)
     output_shape = (66, 200)
     # output_shape = (16, 32)
