@@ -1,7 +1,7 @@
 import os
 import csv
 import shutil
-
+import pandas as pd
 import tensorflow as tf
 import numpy as np
 from keras.applications import VGG16
@@ -55,23 +55,22 @@ def load_track_csv():
 
     # Only look at latest driving_log.csv
     drive_log_path = './driving_log.csv'
-    if os.path.isfile(drive_log_path):
-        with open(drive_log_path, 'r') as drive_logs:
-            has_header = csv.Sniffer().has_header(drive_logs.read(1024 * 10))
-            drive_logs.seek(0)  # rewind
-            incsv = csv.reader(drive_logs)
-            if has_header:
-                next(incsv)  # skip header row
-            observations = csv.reader(drive_logs, delimiter=',')
-            for observation in observations:
-                c = observation[ctr_idx].strip()
-                l = observation[lft_idx].strip()
-                r = observation[rgt_idx].strip()
-                a = float(observation[str_ang])
 
-                x = '{}:{}:{}'.format(l, c, r)
-                X_train.append(x)
-                y_train.append(a)
+
+    if os.path.isfile(drive_log_path):
+        df = pd.read_csv(drive_log_path)
+        # headers = list(df.columns.values)
+        # print(headers)
+        for index, observation in df.iterrows():
+            # print(observation)
+            c = observation[ctr_idx].strip()
+            l = observation[lft_idx].strip()
+            r = observation[rgt_idx].strip()
+            a = float(observation[str_ang])
+
+            x = '{}:{}:{}'.format(l, c, r)
+            X_train.append(x)
+            y_train.append(a)
 
     # Split some of the training data into a validation dataset
     X_train, X_val, y_train, y_val = train_test_split(
