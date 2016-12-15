@@ -14,7 +14,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet, Nvidia, Udacity
+from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.generators.csv_image_provider import batch_generator
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
