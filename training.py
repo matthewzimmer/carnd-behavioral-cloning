@@ -15,7 +15,8 @@ import os
 import time
 
 from keras.engine import Input
-from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU
+from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU, \
+    BatchNormalization
 from keras.models import Sequential, model_from_json
 from keras.optimizers import Adam
 
@@ -344,24 +345,34 @@ class Udacity(BaseNetwork):
         return self.model
 
 
-class MyComma(BaseNetwork):
-    def get_model(self, input_shape, output_shape):
-        model = Sequential()
+class SimpleConvnet(BaseNetwork):
+    def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=True):
+        model = None
 
-        model.add(Convolution2D(32, 3, 3, border_mode="same", input_shape=input_shape))
-        model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-        model.add(Convolution2D(64, 3, 3, border_mode="same", activation='relu'))
-        model.add(Flatten())
-
-        model.add(Dense(64))
-        model.add(ELU())
-        model.add(Dense(1))
+        optimizer = Adam(lr=learning_rate)
+        loss = 'msle'
+        if use_weights:
+            model = self.restore(optimizer=optimizer, loss=loss)
+        if model is None:
+            model = Sequential()
+            model.add(BatchNormalization(input_shape=input_shape, axis=1))
+            # model.add(Lambda(lambda x: x / 127.5 - 1.,
+            #                  input_shape=input_shape,
+            #                  output_shape=output_shape))
+            model.add(Convolution2D(32, 3, 3, border_mode="same", input_shape=input_shape))
+            model.add(MaxPooling2D((2, 2), strides=(2, 2)))
+            model.add(ELU())
+            model.add(Convolution2D(64, 3, 3, border_mode="same"))
+            model.add(Flatten())
+            model.add(Dense(128))
+            model.add(ELU())
+            model.add(Dense(1))
 
         # print information about the model itself
         model.summary()
 
         # Compile and train the model.
-        model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
         # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
         # print(history.history)

@@ -1,4 +1,4 @@
-CARND_IP = '54.218.123.124'
+CARND_IP = '54.245.95.113'
 # INSTANCE_ID = 'i-516ff7c4'
 
 namespace :carnd do
@@ -33,8 +33,17 @@ namespace :carnd do
     # %w(zimpy networks).each do |file_or_dir|
     #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
     # end
+
+    sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress --ignore-existing data/trained #{host}:~/carnd-behavioral-cloning/data"
+    # sh "rsync -ravz --progress --ignore-existing drive_train.py #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress --ignore-existing zimpy #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress --ignore-existing drive.py #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress --ignore-existing training.py #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress --ignore-existing training_test.py #{host}:~/carnd-behavioral-cloning"
+
     unless args[:src].nil?
-      sh "rsync -avz #{args[:src]} #{host}:#{args[:dest]}"
+      sh "rsync -avvz --update --existing --ignore-existing #{args[:src]} #{host}:#{args[:dest]}"
     end
   end
 
