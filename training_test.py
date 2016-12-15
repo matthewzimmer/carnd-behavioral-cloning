@@ -48,10 +48,10 @@ def move_training_images(classifier):
 def load_track_csv():
     X_train, y_train = [], []
 
-    ctr_idx = 0
-    lft_idx = 1
-    rgt_idx = 2
-    str_ang = 3
+    # ctr_idx = 0
+    # lft_idx = 1
+    # rgt_idx = 2
+    # str_ang = 3
 
     # Only look at latest driving_log.csv
     drive_log_path = './driving_log.csv'
@@ -59,14 +59,14 @@ def load_track_csv():
 
     if os.path.isfile(drive_log_path):
         df = pd.read_csv(drive_log_path)
-        # headers = list(df.columns.values)
-        # print(headers)
+        headers = list(df.columns.values)
+        print(headers)
         for index, observation in df.iterrows():
             # print(observation)
-            c = observation[ctr_idx].strip()
-            l = observation[lft_idx].strip()
-            r = observation[rgt_idx].strip()
-            a = float(observation[str_ang])
+            c = observation['center'].strip()
+            l = observation['left'].strip()
+            r = observation['right'].strip()
+            a = float(observation['steering'])
 
             x = '{}:{}:{}'.format(l, c, r)
             X_train.append(x)
@@ -282,7 +282,7 @@ def main(_):
         clf = Nvidia()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train)*3
+        samples_per_epoch = len(X_train)*2
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch

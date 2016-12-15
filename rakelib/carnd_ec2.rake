@@ -26,7 +26,7 @@ namespace :carnd do
     sh "scp -rp #{args[:src]} #{host}:#{args[:dest]}"
   end
 
-  task :rsync, [:src, :dest] do |t, args|
+  task :sync, [:src, :dest] do |t, args|
     args.with_defaults(dest: '~')
     host = "carnd@#{CARND_IP}"
     puts "uploading #{args[:src]} to #{host}:#{args[:dest]}"
@@ -34,13 +34,8 @@ namespace :carnd do
     #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
     # end
 
+    sh "rsync -ravz --progress --ignore-existing driving_log.csv #{host}:~/carnd-behavioral-cloning"
     sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
-    # sh "rsync -ravz --progress --ignore-existing data/trained #{host}:~/carnd-behavioral-cloning/data"
-    # sh "rsync -ravz --progress --ignore-existing drive_train.py #{host}:~/carnd-behavioral-cloning"
-    # sh "rsync -ravz --progress --ignore-existing zimpy #{host}:~/carnd-behavioral-cloning"
-    # sh "rsync -ravz --progress --ignore-existing drive.py #{host}:~/carnd-behavioral-cloning"
-    # sh "rsync -ravz --progress --ignore-existing training.py #{host}:~/carnd-behavioral-cloning"
-    # sh "rsync -ravz --progress --ignore-existing training_test.py #{host}:~/carnd-behavioral-cloning"
 
     unless args[:src].nil?
       sh "rsync -avvz --update --existing --ignore-existing #{args[:src]} #{host}:#{args[:dest]}"
