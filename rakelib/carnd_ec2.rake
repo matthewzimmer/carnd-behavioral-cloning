@@ -1,4 +1,4 @@
-CARND_IP = '54.200.250.6'
+CARND_IP = '54.218.123.124'
 # INSTANCE_ID = 'i-516ff7c4'
 
 namespace :carnd do
@@ -36,6 +36,12 @@ namespace :carnd do
     unless args[:src].nil?
       sh "rsync -avz #{args[:src]} #{host}:#{args[:dest]}"
     end
+  end
+
+  task :get_model, [] do
+    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/model.json carnd-behavioral-cloning/model.h5'"
+    sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
+    sh 'unzip -u trained_model.zip -d ..'
   end
 
   task :down, [:src, :dest] do |t, args|

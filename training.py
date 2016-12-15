@@ -298,7 +298,7 @@ class Nvidia(BaseNetwork):
         model = None
 
         optimizer = Adam(lr=learning_rate)
-        loss = 'mse'
+        loss = 'msle'
         if use_weights:
             model = self.restore(optimizer=optimizer, loss=loss)
         if model is None:
@@ -318,9 +318,9 @@ class Nvidia(BaseNetwork):
             model.add(Flatten())
             model.add(ELU())
             model.add(Dense(1164))
-            model.add(Dropout(.5))
+            # model.add(Dropout(.5))
             model.add(Dense(100))
-            model.add(Dropout(.5))
+            # model.add(Dropout(.5))
             model.add(Dense(50))
             model.add(Dropout(.5))
             model.add(ELU())
