@@ -29,6 +29,7 @@ flags.DEFINE_integer('batch_size', 32, "The batch size.")
 flags.DEFINE_integer('samples_per_epoch', None, "The number of samples per epoch during training.")
 flags.DEFINE_integer('algo_mode', 5, "The algorithm to train against.")
 flags.DEFINE_boolean('repickle', True, "Whether to regenerage the train.p file of training camera images.")
+flags.DEFINE_boolean('use_weights', False, "Whether to use prior trained weights.")
 flags.DEFINE_float('lr', 0.0001, "Optimizer learning rate.")
 
 train_samples_seen = []
@@ -280,7 +281,7 @@ def main(_):
 
         # train model
         clf = Nvidia()
-        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=True)
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
         samples_per_epoch = len(X_train)*3
         if FLAGS.samples_per_epoch is not None:
