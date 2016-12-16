@@ -37,6 +37,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
         counter += 1
         print('batch gen iter {}'.format(counter))
         for i in range(batch_size):
+            start_i = _index_in_epoch
             _index_in_epoch += batch_size
             if _index_in_epoch >= population:
                 print('sampled entire population. reshuffling deck and resetting all counters.')
