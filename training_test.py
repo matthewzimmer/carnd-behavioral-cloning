@@ -14,7 +14,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity
+from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity, Basic
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.generators.csv_image_provider import batch_generator, load_image
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
@@ -301,7 +301,7 @@ def main(_):
         print('population: ', len(X_train))
 
         # train model
-        clf = Nvidia()
+        clf = Basic()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
         samples_per_epoch = len(X_train)
@@ -315,9 +315,9 @@ def main(_):
             height_shift_range=0.02,
             fill_mode='nearest')
 
-        X_train = np.array([load_image(x.split(':')[1]) for x in X_train])
+        X_train = np.array([preprocess_image(load_image(x.split(':')[1]), (40, 80, 3)) for x in X_train])
 
-        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
+        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size, learning_rate=FLAGS.lr)
 
         history = model.fit_generator(train_generator,
                                       nb_epoch=FLAGS.epochs,

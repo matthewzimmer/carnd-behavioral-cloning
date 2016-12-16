@@ -146,11 +146,11 @@ class TrainTrackA(BaseNetwork):
 
         print(history.history)
 
-    # score = self.model.evaluate(X_val, y_val, verbose=1)
-    # print('Validation (loss, accuracy): (%.3f, %.3f)' % (score[0], score[1]))
+        # score = self.model.evaluate(X_val, y_val, verbose=1)
+        # print('Validation (loss, accuracy): (%.3f, %.3f)' % (score[0], score[1]))
 
-    # STOP: Do not change the tests below. Your implementation should pass these tests.
-    # assert (history.history['val_acc'][-1] > 0.9), "The validation accuracy is: %.3f" % history.history['val_acc'][-1]
+        # STOP: Do not change the tests below. Your implementation should pass these tests.
+        # assert (history.history['val_acc'][-1] > 0.9), "The validation accuracy is: %.3f" % history.history['val_acc'][-1]
 
 
 class TrainTrackB(BaseNetwork):
@@ -216,11 +216,11 @@ class TrainTrackB(BaseNetwork):
 
         print(history.history)
 
-    # score = self.model.evaluate(X_val, y_val, verbose=1)
-    # print('Validation (loss, accuracy): (%.3f, %.3f)' % (score[0], score[1]))
+        # score = self.model.evaluate(X_val, y_val, verbose=1)
+        # print('Validation (loss, accuracy): (%.3f, %.3f)' % (score[0], score[1]))
 
-    # STOP: Do not change the tests below. Your implementation should pass these tests.
-    # assert (history.history['val_acc'][-1] > 0.9), "The validation accuracy is: %.3f" % history.history['val_acc'][-1]
+        # STOP: Do not change the tests below. Your implementation should pass these tests.
+        # assert (history.history['val_acc'][-1] > 0.9), "The validation accuracy is: %.3f" % history.history['val_acc'][-1]
 
 
 class SimpleConvnet(BaseNetwork):
@@ -292,6 +292,31 @@ class CommaAI(BaseNetwork):
         self.model = model
 
         return self.model
+
+
+class Basic(BaseNetwork):
+    def get_model(self, input_shape, output_shape, learning_rate=0.001, use_weights=True):
+        model = Sequential()
+        model.add(Convolution2D(24, 5, 5, input_shape=input_shape, border_mode='valid', activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Convolution2D(48, 5, 5, border_mode='same', activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Convolution2D(64, 3, 3, border_mode='same', activation='relu'))
+        model.add(Flatten())
+        model.add(Dropout(0.1))
+        model.add(Dense(1024, activation='relu'))
+        model.add(Dropout(0.1))
+        model.add(Dense(100, activation='relu'))
+        model.add(Dense(50, activation='relu'))
+        model.add(Dense(10, activation='relu'))
+        model.add(Dense(1, init='normal'))
+
+        optimizer = Adam(lr=learning_rate)
+        model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['accuracy'])
+        self.model = model
+        return model
 
 
 class Nvidia(BaseNetwork):

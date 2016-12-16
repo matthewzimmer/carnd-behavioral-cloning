@@ -7,9 +7,10 @@ def flip_image(image_array, steering_angle):
     return np.fliplr(image_array), -steering_angle
 
 
-def preprocess_image(image_array):
+def preprocess_image(image_array, output_shape=None):
     # hard-code this so drive.py and training_test.py use same size (refactor later)
-    output_shape = (66, 200)
+    if output_shape is None:
+        output_shape = (66, 200)
     # output_shape = (16, 32)
     # output_shape = (32, 64)
     # output_shape = (160, 320)
