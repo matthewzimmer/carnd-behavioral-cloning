@@ -283,16 +283,16 @@ def main(_):
         clf = Nvidia()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train)*3
+        samples_per_epoch = len(X_train)*2
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
 
-        history = model.fit_generator(batch_generator(X_train, y_train, 'train set', FLAGS.epochs, output_shape=output_shape),
+        history = model.fit_generator(batch_generator(X_train, y_train, 'train set', FLAGS.epochs, batch_size=FLAGS.batch_size, output_shape=output_shape),
                                       nb_epoch=FLAGS.epochs,
                                       samples_per_epoch=samples_per_epoch,
-                                      nb_val_samples=1,
-                                      validation_data=batch_generator(X_val, y_val, 'validation set', FLAGS.epochs, output_shape=output_shape),
+                                      nb_val_samples=len(X_val),
+                                      validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs, batch_size=FLAGS.batch_size, output_shape=output_shape),
                                       verbose=2)
     elif train_mode == 6:
         output_shape = (80, 160, 3)
