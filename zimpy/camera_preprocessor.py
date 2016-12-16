@@ -15,6 +15,7 @@ def preprocess_image(image_array):
     # output_shape = (160, 320)
 
     x = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
+    image_array = image_array[50:140, 0:320]
 
     # 1. Resize/normalize to desired shape
     image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA)
