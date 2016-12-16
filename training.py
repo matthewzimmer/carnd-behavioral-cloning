@@ -299,7 +299,7 @@ class Nvidia(BaseNetwork):
         model = None
 
         optimizer = Adam(lr=learning_rate)
-        loss = 'mse'
+        loss = 'mae'
         if use_weights:
             model = self.restore(optimizer=optimizer, loss=loss)
         if model is None:
