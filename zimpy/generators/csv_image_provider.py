@@ -60,34 +60,38 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                 if steering_angle < -0.01:
                     chance = random.random()
                     if chance > 0.75:
-                        image_path = X[j].split(':')[2]
+                        image_path = X[j].split(':')[0]
                         steering_angle *= 3.0
                     else:
                         if chance > 0.5:
-                            image_path = X[j].split(':')[2]
+                            image_path = X[j].split(':')[0]
                             steering_angle *= 2.0
                         else:
                             if chance > 0.25:
                                 image_path = X[j].split(':')[1]
                                 steering_angle *= 1.5
                             else:
-                                image_path = X[j].split(':')[1]
+                                if random.random() > (1. - _tot_epochs / num_epochs):
+                                    image_path = X[j].split(':')[1]
+                                    steering_angle += 0.05
                 else:
                     if steering_angle > 0.01:
                         chance = random.random()
                         if chance > 0.75:
-                            image_path = X[j].split(':')[0]
+                            image_path = X[j].split(':')[2]
                             steering_angle *= 3.0
                         else:
                             if chance > 0.5:
-                                image_path = X[j].split(':')[0]
+                                image_path = X[j].split(':')[2]
                                 steering_angle *= 2.0
                             else:
                                 if chance > 0.25:
                                     image_path = X[j].split(':')[1]
                                     steering_angle *= 1.5
                                 else:
-                                    image_path = X[j].split(':')[1]
+                                    if random.random() > (1. - _tot_epochs / num_epochs):
+                                        image_path = X[j].split(':')[1]
+                                        steering_angle += 0.05
                     else:
                         # gradually increase our chances of intoducing
                         if random.random() > (1. - _tot_epochs / num_epochs):
