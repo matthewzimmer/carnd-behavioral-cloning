@@ -89,8 +89,10 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                                 else:
                                     image_path = X[j].split(':')[1]
                     else:
+                        # gradually increase our chances of intoducing
                         if random.random() > (1. - _tot_epochs / num_epochs):
-                            image_path = X[j].split(':')[0]
+                            image_path = X[j].split(':')[1]
+                            steering_angle += 0.05
 
                 if image_path is not None:
                     # print(image_path)
