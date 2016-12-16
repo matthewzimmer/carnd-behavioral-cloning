@@ -316,7 +316,7 @@ def main(_):
             height_shift_range=0.02,
             fill_mode='nearest')
 
-        X_train = np.array([preprocess_image(load_image(x.split(':')[1]), (40, 80, 3)) for x in X_train])
+        X_train = np.array([preprocess_image(load_image(x.split(':')[1]), output_shape=output_shape) for x in X_train])
 
         train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
 
