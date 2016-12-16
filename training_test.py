@@ -317,7 +317,7 @@ def main(_):
 
         X_train = np.array([preprocess_image(load_image(x.split(':')[1]), (40, 80, 3)) for x in X_train])
 
-        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size, learning_rate=FLAGS.lr)
+        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
 
         history = model.fit_generator(train_generator,
                                       nb_epoch=FLAGS.epochs,
