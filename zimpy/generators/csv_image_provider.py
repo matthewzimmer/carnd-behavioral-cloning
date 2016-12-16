@@ -71,9 +71,9 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                                 image_path = X[j].split(':')[1]
                                 steering_angle *= 1.5
                             else:
-                                if random.random() > (1. - _tot_epochs / num_epochs):
+                                if True or random.random() > (1. - _tot_epochs / num_epochs):
                                     image_path = X[j].split(':')[1]
-                                    steering_angle += 0.05
+                                    # steering_angle += 0.05
                 else:
                     if steering_angle > 0.01:
                         chance = random.random()
@@ -89,14 +89,14 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                                     image_path = X[j].split(':')[1]
                                     steering_angle *= 1.5
                                 else:
-                                    if random.random() > (1. - _tot_epochs / num_epochs):
+                                    if True or random.random() > (1. - _tot_epochs / num_epochs):
                                         image_path = X[j].split(':')[1]
-                                        steering_angle += 0.05
+                                        # steering_angle += 0.05
                     else:
                         # gradually increase our chances of intoducing
-                        if random.random() > (1. - _tot_epochs / num_epochs):
+                        if True or random.random() > (1. - _tot_epochs / num_epochs):
                             image_path = X[j].split(':')[1]
-                            steering_angle += 0.05
+                            # steering_angle += 0.05
 
                 if image_path is not None:
                     # print(image_path)
