@@ -76,7 +76,7 @@ def load_track_csv():
     X_train, X_val, y_train, y_val = train_test_split(
         X_train,
         y_train,
-        test_size=0.05,
+        test_size=0.01,
         random_state=0)
 
     X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train, dtype=np.float32), np.array(X_val), np.array(
