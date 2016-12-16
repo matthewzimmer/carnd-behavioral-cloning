@@ -33,11 +33,13 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
     _index_in_epoch = 0
     start_i = 0
     _tot_epochs = 0
+    batch_size = min(batch_size, population)
+
     print('Batch generating against the {} dataset with population {} and shape {}'.format(label, population, X.shape))
     while True:
         counter += 1
         print('batch gen iter {}'.format(counter))
-        for i in range(min(batch_size, population)):
+        for i in range(batch_size):
             start_i = _index_in_epoch
             _index_in_epoch += batch_size
             if _index_in_epoch >= population:
