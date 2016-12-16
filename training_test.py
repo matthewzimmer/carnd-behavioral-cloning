@@ -295,7 +295,8 @@ def main(_):
                                       verbose=2)
 
     elif train_mode == 6:
-        output_shape = (66, 200, 3)
+        # output_shape = (66, 200, 3)
+        output_shape = (40, 80, 3)
         X_train, y_train, X_val, y_val = load_track_csv()
 
         print('population: ', len(X_train))
