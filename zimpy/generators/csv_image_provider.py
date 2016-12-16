@@ -41,7 +41,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
             start_i = _index_in_epoch
             _index_in_epoch += batch_size
             if _index_in_epoch >= population:
-                print('sampled entire population. reshuffling deck and resetting all counters.')
+                print('  sampled entire population. reshuffling deck and resetting all counters.')
                 perm = np.arange(population)
                 np.random.shuffle(perm)
                 X = X[perm]
@@ -53,7 +53,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
 
             X_batch = []
             y_batch = []
-            print('  yielding train items in range {}'.format(range(start_i, end_i)))
+            # print('  yielding train items in range {}'.format(range(start_i, end_i)))
             for j in range(start_i, end_i):
                 steering_angle = Y[j]
                 image_path = None
