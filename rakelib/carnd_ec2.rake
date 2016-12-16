@@ -33,7 +33,7 @@ namespace :carnd do
     #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
     # end
 
-    sh "rsync -ravz --progress --ignore-existing driving_log.csv #{host}:~/carnd-behavioral-cloning"
+    sh "rsync -ravz --progress driving_log.csv #{host}:~/carnd-behavioral-cloning"
     sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
 
     unless args[:src].nil?
@@ -42,9 +42,12 @@ namespace :carnd do
   end
 
   task :get_model, [] do
-    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained'"
-    sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
-    sh 'unzip -u trained_model.zip -d ..'
+    host = "carnd@#{CARND_IP}"
+
+    # sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained'"
+    # sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
+    # sh 'unzip -u trained_model.zip -d ..'
+    sh "rsync -avzh --progress #{host}:~/carnd-behavioral-cloning/data/trained ./data"
   end
 
   task :down, [:src, :dest] do |t, args|
