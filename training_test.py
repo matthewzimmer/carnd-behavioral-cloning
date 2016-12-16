@@ -16,7 +16,7 @@ from sklearn.model_selection import train_test_split
 
 from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity
 from zimpy.camera_preprocessor import preprocess_image, predict_images
-from zimpy.generators.csv_image_provider import batch_generator
+from zimpy.generators.csv_image_provider import batch_generator, load_image
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
 
 flags = tf.app.flags
@@ -293,7 +293,37 @@ def main(_):
                                       nb_val_samples=len(X_val),
                                       validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs, batch_size=FLAGS.batch_size, output_shape=output_shape),
                                       verbose=2)
+
     elif train_mode == 6:
+        output_shape = (66, 200, 3)
+        X_train, y_train, X_val, y_val = load_track_csv()
+
+        # train model
+        clf = Nvidia()
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
+
+        samples_per_epoch = len(X_train)
+        if FLAGS.samples_per_epoch is not None:
+            print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
+            samples_per_epoch = FLAGS.samples_per_epoch
+
+        #A data generator was used to generate more data for better accuracy
+        train_datagen = ImageDataGenerator(
+            width_shift_range=0.1,
+            height_shift_range=0.02,
+            fill_mode='nearest')
+
+        X_train = np.array([load_image(x.split(':')[1]) for x in X_train])
+
+        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
+
+        history = model.fit_generator(train_generator,
+                                      nb_epoch=FLAGS.epochs,
+                                      samples_per_epoch=samples_per_epoch,
+                                      validation_data=None,
+                                      verbose=2)
+
+    elif train_mode == 7:
         output_shape = (80, 160, 3)
         X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
         img_rows, img_cols = X_train.shape[1], X_train.shape[2]
