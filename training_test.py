@@ -298,7 +298,7 @@ def main(_):
         output_shape = (66, 200, 3)
         X_train, y_train, X_val, y_val = load_track_csv()
 
-        print('population: ', X_train)
+        print('population: ', len(X_train))
 
         # train model
         clf = Nvidia()
