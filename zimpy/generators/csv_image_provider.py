@@ -2,11 +2,12 @@ import random
 
 import cv2
 import numpy as np
-
+from os.path import basename
 from zimpy.camera_preprocessor import preprocess_image
 
 
 def load_image(imagepath):
+    imagepath = './IMG/'+basename(imagepath)
     img = cv2.imread(imagepath, 1)
     # do any preprocessing... resize, reshape, etc. here...
     # newx, newy = int(img.shape[1]/4),int(img.shape[0]/4) #new size (w,h)

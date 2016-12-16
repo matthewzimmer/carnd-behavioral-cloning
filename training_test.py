@@ -1,7 +1,7 @@
 import os
 import csv
 import shutil
-
+import pandas as pd
 import tensorflow as tf
 import numpy as np
 from keras.applications import VGG16
@@ -14,7 +14,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, MyComma, SimpleConvnet, Nvidia, Udacity
+from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.generators.csv_image_provider import batch_generator
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
@@ -48,30 +48,29 @@ def move_training_images(classifier):
 def load_track_csv():
     X_train, y_train = [], []
 
-    ctr_idx = 0
-    lft_idx = 1
-    rgt_idx = 2
-    str_ang = 3
+    # ctr_idx = 0
+    # lft_idx = 1
+    # rgt_idx = 2
+    # str_ang = 3
 
     # Only look at latest driving_log.csv
     drive_log_path = './driving_log.csv'
-    if os.path.isfile(drive_log_path):
-        with open(drive_log_path, 'r') as drive_logs:
-            has_header = csv.Sniffer().has_header(drive_logs.read(1024 * 10))
-            drive_logs.seek(0)  # rewind
-            incsv = csv.reader(drive_logs)
-            if has_header:
-                next(incsv)  # skip header row
-            observations = csv.reader(drive_logs, delimiter=',')
-            for observation in observations:
-                c = observation[ctr_idx].strip()
-                l = observation[lft_idx].strip()
-                r = observation[rgt_idx].strip()
-                a = float(observation[str_ang])
 
-                x = '{}:{}:{}'.format(l, c, r)
-                X_train.append(x)
-                y_train.append(a)
+
+    if os.path.isfile(drive_log_path):
+        df = pd.read_csv(drive_log_path)
+        headers = list(df.columns.values)
+        print(headers)
+        for index, observation in df.iterrows():
+            # print(observation)
+            c = observation['center'].strip()
+            l = observation['left'].strip()
+            r = observation['right'].strip()
+            a = float(observation['steering'])
+
+            x = '{}:{}:{}'.format(l, c, r)
+            X_train.append(x)
+            y_train.append(a)
 
     # Split some of the training data into a validation dataset
     X_train, X_val, y_train, y_val = train_test_split(
