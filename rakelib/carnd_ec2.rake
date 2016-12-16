@@ -43,7 +43,7 @@ namespace :carnd do
   end
 
   task :get_model, [] do
-    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/model.json carnd-behavioral-cloning/model.h5'"
+    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained/model_Nvidia.json carnd-behavioral-cloning/data/trained/model_Nvidia.h5'"
     sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
     sh 'unzip -u trained_model.zip -d ..'
   end
