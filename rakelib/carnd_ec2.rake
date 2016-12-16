@@ -1,5 +1,4 @@
-CARND_IP = '54.245.95.113'
-# INSTANCE_ID = 'i-516ff7c4'
+CARND_IP = '54.218.82.164'
 
 namespace :carnd do
   task :ssh do
@@ -43,7 +42,7 @@ namespace :carnd do
   end
 
   task :get_model, [] do
-    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained/model_Nvidia.json carnd-behavioral-cloning/data/trained/model_Nvidia.h5'"
+    sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained'"
     sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
     sh 'unzip -u trained_model.zip -d ..'
   end
