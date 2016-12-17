@@ -59,55 +59,7 @@ def telemetry(sid, data):
     image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
     image_array = cv2.resize(image_array, (IMG_WIDTH, IMG_HEIGHT))
 
-    # image_array =image_array / 255.
-    ########image_array = image_array - 0.5
-    # image_array =normalize_set(image_array, False)
-
-    r, g, b = cv2.split(image_array)
-    r_flat, g_flat, b_flat = r.flatten(), g.flatten(), b.flatten()
-    r_temp = r_flat / 255.
-    r_norm = r_temp - 0.5
-    g_temp = g_flat / 255.
-    g_norm = g_temp / 0.5
-    b_temp = b_flat / 255.
-    b_norm = b_temp - 0.5
-
-    # r_norm = -0.5 + ((r_flat - np.min(r_flat))/ (np.max(r_flat)-np.min(r_flat)))
-    # g_norm = -0.5 + ((g_flat - np.min(g_flat))/ (np.max(g_flat)-np.min(g_flat)))
-    # b_norm = -0.5 + ((b_flat - np.min(b_flat))/ (np.max(b_flat)-np.min(b_flat)))
-
-    # g_norm = g_flat*1.
-    # b_norm = b_flat*1.
-
-
-
-
-
-
-    # r_norm32, g_norm32, b_norm32 =np.reshape(r_norm, (50,200)), np.reshape(g_norm, (50,200)),np.reshape(b_norm, (50,200))
-    r_norm32, g_norm32, b_norm32 = np.reshape(r_norm, (y_maxi - y_mini, x_maxi - x_mini)), np.reshape(g_norm, (
-    y_maxi - y_mini, x_maxi - x_mini)), np.reshape(b_norm, (y_maxi - y_mini, x_maxi - x_mini))
-    image_array = cv2.merge((r_norm32, g_norm32, b_norm32))
-
-    # print (image_array.shape)
-    # image_array = cv2.resize(image_array, (160, 360))
-    # image_array = resize_image(image_array, [160,360])
-
-    # transformed_image_array = image_array[None, :, :, :]
-    # transformed_image_array = image_array.reshape(( None,
-    #                                           image_array.shape[0],
-    #                                           image_array.shape[1],
-    #                                           3))
-
-    # print(transformed_image_array.shape)
-
-    # image_array =normalize_set(image_array, False)
-
     transformed_image_array = image_array[None, :, :, :]
-
-    ##print(transformed_image_array.shape)
-    ###print(model.predict(transformed_image_array, batch_size=1), 'pred')
-
 
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
