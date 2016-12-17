@@ -33,7 +33,8 @@ namespace :carnd do
     #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
     # end
 
-    sh "rsync -ravz --progress driving_log.csv #{host}:~/carnd-behavioral-cloning"
+    # sh "rsync -ravz --progress driving_log.csv #{host}:~/carnd-behavioral-cloning"
+    sh "scp -rp driving_log.csv #{host}:~/carnd-behavioral-cloning"
     sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
 
     unless args[:src].nil?

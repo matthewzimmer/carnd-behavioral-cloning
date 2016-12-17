@@ -68,6 +68,7 @@ def load_track_csv():
             a = float(observation['steering'])
 
             if os.path.isfile(c):
+                l, c, r = [('IMG/'+os.path.split(file_path)[1]) for file_path in (l, c, r)]
                 x = '{}:{}:{}'.format(l, c, r)
                 X_train.append(x)
                 y_train.append(a)
