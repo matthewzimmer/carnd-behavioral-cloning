@@ -60,15 +60,17 @@ def load_track_csv():
         df = pd.read_csv(drive_log_path)
         headers = list(df.columns.values)
         print(headers)
-        for index, observation in df.iterrows():
+        for index, row in df.iterrows():
             # print(observation)
-            c = observation['center'].strip()
-            l = observation['left'].strip()
-            r = observation['right'].strip()
-            a = float(observation['steering'])
+            c = row['center'].strip()
+            l = row['left'].strip()
+            r = row['right'].strip()
+            a = float(row['steering'])
 
             if os.path.isfile(c):
-                l, c, r = [('IMG/'+os.path.split(file_path)[1]) for file_path in (l, c, r)]
+                # casts absolute path to relative to remain env agnostic
+                l, c, r = [('IMG/' + os.path.split(file_path)[1]) for file_path in (l, c, r)]
+                # single string in memory
                 x = '{}:{}:{}'.format(l, c, r)
                 X_train.append(x)
                 y_train.append(a)
@@ -325,13 +327,17 @@ def main(_):
         X_train = np.array([preprocess_image(load_image(x), output_shape=output_shape) for x in center_paths if
                             os.path.isfile(x) is True])
 
-        train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
+        # train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
+        # train_generator = train_datagen.flow_from_directory('IMG', target_size=output_shape, classes=y_train, class_mode='sparse', batch_size=FLAGS.batch_size)
 
-        history = model.fit_generator(train_generator,
-                                      nb_epoch=FLAGS.epochs,
-                                      samples_per_epoch=samples_per_epoch,
-                                      validation_data=None,
-                                      verbose=2)
+        # history = model.fit_generator(train_generator,
+        history = model.fit_generator(
+            batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=20000, flip_images=True, batch_size=FLAGS.batch_size,
+                            output_shape=output_shape),
+            nb_epoch=FLAGS.epochs,
+            samples_per_epoch=samples_per_epoch,
+            validation_data=None,
+            verbose=2)
 
     elif train_mode == 7:
         output_shape = (80, 160, 3)

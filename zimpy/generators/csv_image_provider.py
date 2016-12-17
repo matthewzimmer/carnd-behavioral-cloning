@@ -23,7 +23,7 @@ def augment_brightness_camera_images(image):
     return image1
 
 
-def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
+def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, flip_images=True):
     population = len(X)
     counter = 0
     _index_in_epoch = 0
