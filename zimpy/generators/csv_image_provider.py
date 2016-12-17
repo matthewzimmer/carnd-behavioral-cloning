@@ -104,7 +104,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                 if image_path is not None:
                     # print(image_path)
                     image = load_image(image_path)
-                    image = preprocess_image(image)
+                    image = preprocess_image(image, output_shape=output_shape)
 
                     # steering_angle = np.array([[steering_angle]])
                     # steering_angle = np.array([steering_angle])
