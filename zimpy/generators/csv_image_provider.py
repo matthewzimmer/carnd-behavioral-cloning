@@ -7,15 +7,11 @@ from zimpy.camera_preprocessor import preprocess_image
 
 
 def load_image(imagepath):
-    imagepath = './IMG/'+basename(imagepath)
-    img = cv2.imread(imagepath, 1)
-    # do any preprocessing... resize, reshape, etc. here...
-    # newx, newy = int(img.shape[1]/4),int(img.shape[0]/4) #new size (w,h)
-    # newimage = cv2.resize(img,(newx,newy))
-    processed_img = None
-    if img is not None:
-        processed_img = preprocess_image(img)
-    return processed_img
+    imagepath = 'IMG/'+basename(imagepath)
+    image_array = cv2.imread(imagepath, 1)
+    if image_array is None:
+        print('File Not Found: {}'.format(imagepath))
+    return image_array
 
 
 def augment_brightness_camera_images(image):
@@ -108,6 +104,8 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None):
                 if image_path is not None:
                     # print(image_path)
                     image = load_image(image_path)
+                    image = preprocess_image(image)
+
                     # steering_angle = np.array([[steering_angle]])
                     # steering_angle = np.array([steering_angle])
                     # image = image.reshape(1, output_shape[0], output_shape[1], output_shape[2])

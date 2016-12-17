@@ -16,13 +16,13 @@ def preprocess_image(image_array, output_shape=None):
     # output_shape = (32, 64)
     # output_shape = (160, 320)
 
-    x = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
-    image_array = image_array[50:140, 0:320]
+    image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
+    image_array = image_array[50:140, 0:320] # crops top portion as well as car's hood from image
 
-    # 1. Resize/normalize to desired shape
     image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA)
-    # image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA) / 255.0
-    # image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA) / 127.5 - 1
+
+    # image_array = image_array / 255 - 0.5
+    # image_array = image_array / 127.5 - 1.
     # image_array = cv2.normalize(image_array, image_array, norm_type=cv2.NORM_MINMAX)
 
     # 2. crop top third of image

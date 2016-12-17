@@ -56,7 +56,6 @@ def load_track_csv():
     # Only look at latest driving_log.csv
     drive_log_path = './driving_log.csv'
 
-
     if os.path.isfile(drive_log_path):
         df = pd.read_csv(drive_log_path)
         headers = list(df.columns.values)
@@ -68,9 +67,10 @@ def load_track_csv():
             r = observation['right'].strip()
             a = float(observation['steering'])
 
-            x = '{}:{}:{}'.format(l, c, r)
-            X_train.append(x)
-            y_train.append(a)
+            if os.path.isfile(c):
+                x = '{}:{}:{}'.format(l, c, r)
+                X_train.append(x)
+                y_train.append(a)
 
     # Split some of the training data into a validation dataset
     X_train, X_val, y_train, y_val = train_test_split(
@@ -282,17 +282,20 @@ def main(_):
         clf = Nvidia()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train)*2
+        samples_per_epoch = len(X_train) * 2
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
 
-        history = model.fit_generator(batch_generator(X_train, y_train, 'train set', FLAGS.epochs, batch_size=FLAGS.batch_size, output_shape=output_shape),
-                                      nb_epoch=FLAGS.epochs,
-                                      samples_per_epoch=samples_per_epoch,
-                                      nb_val_samples=len(X_val),
-                                      validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs, batch_size=FLAGS.batch_size, output_shape=output_shape),
-                                      verbose=2)
+        history = model.fit_generator(
+            batch_generator(X_train, y_train, 'train set', FLAGS.epochs, batch_size=FLAGS.batch_size,
+                            output_shape=output_shape),
+            nb_epoch=FLAGS.epochs,
+            samples_per_epoch=samples_per_epoch,
+            nb_val_samples=len(X_val),
+            validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs,
+                                            batch_size=FLAGS.batch_size, output_shape=output_shape),
+            verbose=2)
 
     elif train_mode == 6:
         # output_shape = (66, 200, 3)
@@ -305,18 +308,21 @@ def main(_):
         clf = Basic()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train)
+        samples_per_epoch = 20000  # len(X_train)
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
 
-        #A data generator was used to generate more data for better accuracy
+        # A data generator was used to generate more data for better accuracy
         train_datagen = ImageDataGenerator(
             width_shift_range=0.1,
             height_shift_range=0.02,
             fill_mode='nearest')
 
-        X_train = np.array([preprocess_image(load_image(x.split(':')[1]), output_shape=output_shape) for x in X_train])
+        # Let's train solely on center images for now
+        center_paths = np.array([x.split(':')[1] for x in X_train])
+        X_train = np.array([preprocess_image(load_image(x), output_shape=output_shape) for x in center_paths if
+                            os.path.isfile(x) is True])
 
         train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
 

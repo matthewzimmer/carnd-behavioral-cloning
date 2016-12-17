@@ -297,7 +297,7 @@ class CommaAI(BaseNetwork):
 class Basic(BaseNetwork):
     def get_model(self, input_shape, output_shape, learning_rate=0.001, use_weights=True):
         model = Sequential()
-        model.add(Lambda(lambda x: x / 127.5 - 1.,
+        model.add(Lambda(lambda x: x / 255 - 0.5,
                          input_shape=input_shape,
                          output_shape=output_shape))
         model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu'))
