@@ -35,7 +35,7 @@ namespace :carnd do
 
     # sh "rsync -ravz --progress driving_log.csv #{host}:~/carnd-behavioral-cloning"
     sh "scp -rp driving_log.csv #{host}:~/carnd-behavioral-cloning"
-    sh "rsync -ravz --progress IMG #{host}:~/carnd-behavioral-cloning"
+    sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
 
     unless args[:src].nil?
       sh "rsync -avvz --update --existing --ignore-existing #{args[:src]} #{host}:#{args[:dest]}"
