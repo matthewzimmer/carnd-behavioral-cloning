@@ -13,7 +13,7 @@ def load_image(imagepath):
     imagepath = 'IMG/'+file_name
 
     # image_array = cv2.imread(imagepath, 1)
-    print('load image at path ', imagepath)
+    # print('load image at path ', imagepath)
     image_array = misc.imread(imagepath)
     if image_array is None:
         print('File Not Found: {}'.format(imagepath))
