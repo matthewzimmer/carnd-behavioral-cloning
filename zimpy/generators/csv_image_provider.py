@@ -9,9 +9,12 @@ from scipy import misc
 def load_image(imagepath):
     imagepath = 'IMG/'+basename(imagepath)
     # image_array = cv2.imread(imagepath, 1)
-    image_array = misc.imread(imagepath, 1)
+    # print('load image at path ', imagepath)
+    image_array = misc.imread(imagepath)
     if image_array is None:
         print('File Not Found: {}'.format(imagepath))
+    # print(np.array(image_array.shape))
+    # print('{} shape: '.format(imagepath), image_array.shape)
     return image_array
 
 
@@ -100,7 +103,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                                 image_path = X[j].split(':')[1]
                                 # steering_angle += 0.05
                 else:
-                    image_path = X[j].split(':')[1]
+                    image_path = X[j].split(':')[1] # center camera
 
                 if image_path is not None:
                     # print(image_path)
@@ -113,9 +116,11 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                     # image = image.reshape(1, image.shape[0], image.shape[1], image.shape[2])
                     if image is not None:
                         if random.random() > 0.5:
+                            # print('O')
                             X_batch.append(image)
                             y_batch.append(steering_angle)
                         else:
+                            # print('  1')
                             # print('     # flipping image and steering')
                             X_batch.append(np.fliplr(image))
                             y_batch.append(-steering_angle)

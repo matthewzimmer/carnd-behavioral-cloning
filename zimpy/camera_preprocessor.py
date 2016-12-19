@@ -15,6 +15,7 @@ def preprocess_image(image_array, output_shape=None):
     # output_shape = (16, 32)
     # output_shape = (32, 64)
     # output_shape = (160, 320)
+    # print('preprocess image shape: ', image_array.shape)
 
     image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
     image_array = image_array[50:140, 0:320] # crops top portion as well as car's hood from image
