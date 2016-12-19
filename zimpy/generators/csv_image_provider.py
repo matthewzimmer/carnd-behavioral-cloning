@@ -5,11 +5,15 @@ import numpy as np
 from os.path import basename
 from zimpy.camera_preprocessor import preprocess_image
 from scipy import misc
+import os
 
 def load_image(imagepath):
-    imagepath = 'IMG/'+basename(imagepath)
+    # imagepath = 'IMG/'+basename(imagepath)
+    path, file_name = os.path.split(imagepath)
+    imagepath = 'IMG/'+file_name
+
     # image_array = cv2.imread(imagepath, 1)
-    # print('load image at path ', imagepath)
+    print('load image at path ', imagepath)
     image_array = misc.imread(imagepath)
     if image_array is None:
         print('File Not Found: {}'.format(imagepath))
