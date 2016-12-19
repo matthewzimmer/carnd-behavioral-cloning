@@ -285,7 +285,7 @@ def main(_):
         clf = Nvidia()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train) * 2
+        samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch

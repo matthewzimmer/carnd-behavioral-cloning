@@ -111,10 +111,11 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                     # image = image.reshape(1, output_shape[0], output_shape[1], output_shape[2])
                     # image = image.reshape(1, image.shape[0], image.shape[1], image.shape[2])
                     if image is not None:
-                        X_batch.append(image)
-                        y_batch.append(steering_angle)
                         if random.random() > 0.5:
-                            # print('     >> flipping image and steering')
+                            X_batch.append(image)
+                            y_batch.append(steering_angle)
+                        else:
+                            print('     # flipping image and steering')
                             X_batch.append(np.fliplr(image))
                             y_batch.append(-steering_angle)
 
