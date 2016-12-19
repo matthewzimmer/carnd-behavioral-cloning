@@ -115,7 +115,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                             X_batch.append(image)
                             y_batch.append(steering_angle)
                         else:
-                            print('     # flipping image and steering')
+                            # print('     # flipping image and steering')
                             X_batch.append(np.fliplr(image))
                             y_batch.append(-steering_angle)
 
