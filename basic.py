@@ -23,12 +23,9 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 # command line flags
-flags.DEFINE_string('network_arch', 'commaai', "The network architecture to train on.")
-flags.DEFINE_integer('epochs', 1, "The number of epochs.")
+flags.DEFINE_integer('epochs', 2, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 32, "The batch size.")
 flags.DEFINE_integer('samples_per_epoch', None, "The number of samples per epoch during training.")
-flags.DEFINE_integer('algo_mode', 5, "The algorithm to train against.")
-flags.DEFINE_boolean('repickle', True, "Whether to regenerage the train.p file of training camera images.")
 flags.DEFINE_boolean('use_weights', False, "Whether to use prior trained weights.")
 flags.DEFINE_float('lr', 0.0001, "Optimizer learning rate.")
 
@@ -73,7 +70,7 @@ def load_track_csv():
     X_train, X_val, y_train, y_val = train_test_split(
         X_train,
         y_train,
-        test_size=0.01,
+        test_size=0.15,
         random_state=0)
 
     X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train, dtype=np.float32), np.array(X_val), np.array(
