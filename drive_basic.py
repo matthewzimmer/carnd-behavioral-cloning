@@ -16,6 +16,8 @@ from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 import cv2
 
+from zimpy.camera_preprocessor import preprocess_image
+
 sio = socketio.Server()
 app = Flask(__name__)
 model = None
@@ -56,9 +58,9 @@ def telemetry(sid, data):
 
     # image_array = image_array[65:105, 60:260]
     # image_array = image_array[y_mini:y_maxi, x_mini: x_maxi]
-    image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
-    image_array = cv2.resize(image_array, (IMG_WIDTH, IMG_HEIGHT))
-
+    # image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
+    # image_array = cv2.resize(image_array, (IMG_WIDTH, IMG_HEIGHT))
+    image_array = preprocess_image(image_array, output_shape=(40, 80))
     transformed_image_array = image_array[None, :, :, :]
 
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
