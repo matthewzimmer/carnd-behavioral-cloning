@@ -16,7 +16,7 @@ import time
 
 from keras.engine import Input
 from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU, \
-    BatchNormalization
+    BatchNormalization, LeakyReLU
 from keras.models import Sequential, model_from_json
 from keras.optimizers import Adam
 
@@ -336,23 +336,23 @@ class Nvidia(BaseNetwork):
                              input_shape=input_shape,
                              output_shape=output_shape))
             model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
             model.add(Flatten())
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Dense(1164))
             model.add(Dropout(.5))
             model.add(Dense(100))
             model.add(Dropout(.5))
             model.add(Dense(50))
             model.add(Dropout(.5))
-            model.add(ELU())
+            model.add(LeakyReLU())
             model.add(Dense(1))
             model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 

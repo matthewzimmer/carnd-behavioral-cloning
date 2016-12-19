@@ -285,7 +285,7 @@ def main(_):
         clf = Nvidia()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = len(X_train) * 2
+        samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
@@ -307,11 +307,19 @@ def main(_):
 
         print('population: ', len(X_train))
 
+        # Let's train solely on center images for now
+        # center_paths = np.array([x.split(':')[1] for x in X_train])
+        # X_train = np.array([preprocess_image(load_image(x), output_shape=output_shape) for x in center_paths if os.path.isfile(x) is True])
+        # X_train = np.array([x for x in center_paths if os.path.isfile(x) is True])
+
+        # train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
+        # train_generator = train_datagen.flow_from_directory('IMG', target_size=output_shape, classes=y_train, class_mode='sparse', batch_size=FLAGS.batch_size)
+
         # train model
         clf = Basic()
         model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
-        samples_per_epoch = 20000  # len(X_train)
+        samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
@@ -322,17 +330,10 @@ def main(_):
             height_shift_range=0.02,
             fill_mode='nearest')
 
-        # Let's train solely on center images for now
-        center_paths = np.array([x.split(':')[1] for x in X_train])
-        X_train = np.array([preprocess_image(load_image(x), output_shape=output_shape) for x in center_paths if
-                            os.path.isfile(x) is True])
-
-        # train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
-        # train_generator = train_datagen.flow_from_directory('IMG', target_size=output_shape, classes=y_train, class_mode='sparse', batch_size=FLAGS.batch_size)
-
         # history = model.fit_generator(train_generator,
         history = model.fit_generator(
-            batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=20000, flip_images=True, batch_size=FLAGS.batch_size,
+            batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
+                            batch_size=FLAGS.batch_size,
                             output_shape=output_shape),
             nb_epoch=FLAGS.epochs,
             samples_per_epoch=samples_per_epoch,
