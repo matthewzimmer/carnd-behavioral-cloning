@@ -383,7 +383,8 @@ class Nvidia(BaseNetwork):
             model.add(Dense(100))
             model.add(Dropout(dropout_prob))
             model.add(Dense(50))
-            model.add(Dropout(dropout_prob, activation=activation))
+            model.add(Dropout(dropout_prob))
+            model.add(ELU())
             model.add(Dense(1))
             model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
