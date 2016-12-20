@@ -51,27 +51,16 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
-    # print(image_array.shape)
-
-    # print (image_array.shape, 'b')
-    # image_array = image_array[50:140, 0:360]
-
-    # image_array = image_array[65:105, 60:260]
-    # image_array = image_array[y_mini:y_maxi, x_mini: x_maxi]
-    # image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
-    # image_array = cv2.resize(image_array, (IMG_WIDTH, IMG_HEIGHT))
     image_array = preprocess_image(image_array, output_shape=(40, 80))
     transformed_image_array = image_array[None, :, :, :]
 
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     print(steering_angle)
+
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.2
-    # print(steering_angle, throttle)
     send_control(steering_angle, throttle)
-    # send_control(-1, throttle)
-    # send_control(b_norm[0], throttle)
 
 
 @sio.on('connect')
