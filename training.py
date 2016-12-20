@@ -32,6 +32,7 @@ class BaseNetwork:
         raise NotImplementedError
 
     def save(self):
+        print('Saved {} model.'.format(self.__class__.__name__))
         self.__persist()
 
     def serialize(self, data={}):
@@ -319,6 +320,7 @@ class Basic(BaseNetwork):
         optimizer = Adam(lr=learning_rate)
         model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['accuracy'])
         self.model = model
+        model.summary()
         return model
 
 
@@ -343,6 +345,8 @@ class BasicELU(BaseNetwork):
             model.add(Convolution2D(48, 5, 5, border_mode='same', activation=activation))
             model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Convolution2D(64, 3, 3, border_mode='same', activation=activation))
+            # model.add(MaxPooling2D(pool_size=(2, 2)))
+            # model.add(Convolution2D(128, 3, 3, border_mode='same', activation=activation))
             model.add(Flatten())
             model.add(Dropout(dropout_prob))
             model.add(Dense(1024, activation=activation))

@@ -310,7 +310,7 @@ def main(_):
 
         # train model
         clf = Basic()
-        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights, dropout_prob=FLAGS.dropout_prob)
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
         samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
@@ -320,7 +320,8 @@ def main(_):
         history = model.fit_generator(
             batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
                             batch_size=FLAGS.batch_size,
-                            output_shape=output_shape),
+                            output_shape=output_shape,
+                            classifier=clf),
             nb_epoch=FLAGS.epochs,
             samples_per_epoch=samples_per_epoch,
             validation_data=None,
