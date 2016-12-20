@@ -26,7 +26,7 @@ def augment_brightness_camera_images(image):
     return image1
 
 
-def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, flip_images=True):
+def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, flip_images=True, classifier=None):
     population = len(X)
     counter = 0
     _index_in_epoch = 0
@@ -42,6 +42,8 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
             start_i = _index_in_epoch
             _index_in_epoch += batch_size
             if _index_in_epoch >= population:
+                if classifier is not None:
+                    classifier.save()
                 print('  sampled entire population. reshuffling deck and resetting all counters.')
                 perm = np.arange(population)
                 np.random.shuffle(perm)

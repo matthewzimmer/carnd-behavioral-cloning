@@ -95,13 +95,6 @@ def main(_):
         print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
         samples_per_epoch = FLAGS.samples_per_epoch
 
-    # A data generator was used to generate more data for better accuracy
-    train_datagen = ImageDataGenerator(
-        width_shift_range=0.1,
-        height_shift_range=0.02,
-        fill_mode='nearest')
-
-    # history = model.fit_generator(train_generator,
     history = model.fit_generator(
         batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
                         batch_size=FLAGS.batch_size,
