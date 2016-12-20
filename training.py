@@ -32,6 +32,7 @@ class BaseNetwork:
         raise NotImplementedError
 
     def save(self):
+        print('Saved {} model.'.format(self.__class__.__name__))
         self.__persist()
 
     def serialize(self, data={}):
