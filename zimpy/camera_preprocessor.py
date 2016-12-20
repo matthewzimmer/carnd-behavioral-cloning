@@ -2,21 +2,28 @@ import cv2
 import numpy as np
 from scipy import misc
 
+
 def flip_image(image_array, steering_angle):
     return np.fliplr(image_array), -steering_angle
 
 
-def preprocess_image(image_array, output_shape=(160, 320)):
+def preprocess_image(image_array, output_shape=None):
     # hard-code this so drive.py and training_test.py use same size (refactor later)
-    output_shape = (66, 200)
+    if output_shape is None:
+        output_shape = (66, 200)
+        # output_shape = (40, 80)
     # output_shape = (16, 32)
     # output_shape = (32, 64)
     # output_shape = (160, 320)
+    # print('preprocess image shape: ', image_array.shape)
 
-    # 1. Resize/normalize to desired shape
+    image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
+    image_array = image_array[50:140, 0:320] # crops top portion as well as car's hood from image
+
     image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA)
-    # image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA) / 255.0
-    # image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA) / 127.5 - 1
+
+    # image_array = image_array / 255 - 0.5
+    # image_array = image_array / 127.5 - 1.
     # image_array = cv2.normalize(image_array, image_array, norm_type=cv2.NORM_MINMAX)
 
     # 2. crop top third of image

@@ -1,5 +1,4 @@
-CARND_IP = '54.200.250.6'
-# INSTANCE_ID = 'i-516ff7c4'
+CARND_IP = '54.149.186.5'
 
 namespace :carnd do
   task :ssh do
@@ -26,16 +25,30 @@ namespace :carnd do
     sh "scp -rp #{args[:src]} #{host}:#{args[:dest]}"
   end
 
-  task :rsync, [:src, :dest] do |t, args|
+  task :sync, [:src, :dest] do |t, args|
     args.with_defaults(dest: '~')
     host = "carnd@#{CARND_IP}"
     puts "uploading #{args[:src]} to #{host}:#{args[:dest]}"
     # %w(zimpy networks).each do |file_or_dir|
     #   sh "rsync -avz --exclude '*.zip' --exclude '*.pickle' --exclude '*.p' #{file_or_dir} #{host}:#{args[:dest]}"
     # end
+
+    # sh "rsync -ravz --progress driving_log.csv #{host}:~/carnd-behavioral-cloning"
+    sh "scp -rp driving_log.csv #{host}:~/carnd-behavioral-cloning"
+    sh "rsync -ravz --progress --ignore-existing IMG #{host}:~/carnd-behavioral-cloning"
+
     unless args[:src].nil?
-      sh "rsync -avz #{args[:src]} #{host}:#{args[:dest]}"
+      sh "rsync -avvz --update --existing --ignore-existing #{args[:src]} #{host}:#{args[:dest]}"
     end
+  end
+
+  task :get_model, [] do
+    host = "carnd@#{CARND_IP}"
+
+    # sh "ssh -t carnd@#{CARND_IP} 'zip -r ~/trained_model.zip carnd-behavioral-cloning/data/trained'"
+    # sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
+    # sh 'unzip -u trained_model.zip -d ..'
+    sh "rsync -avzh --progress #{host}:~/carnd-behavioral-cloning/data/trained ./data"
   end
 
   task :down, [:src, :dest] do |t, args|
