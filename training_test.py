@@ -310,7 +310,7 @@ def main(_):
 
         # train model
         clf = Basic()
-        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights, dropout_prob=FLAGS.dropout_prob)
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
 
         samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
