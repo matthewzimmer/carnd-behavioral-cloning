@@ -319,6 +319,7 @@ class Basic(BaseNetwork):
         optimizer = Adam(lr=learning_rate)
         model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['accuracy'])
         self.model = model
+        model.summary()
         return model
 
 
