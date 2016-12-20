@@ -320,7 +320,8 @@ def main(_):
         history = model.fit_generator(
             batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
                             batch_size=FLAGS.batch_size,
-                            output_shape=output_shape),
+                            output_shape=output_shape,
+                            classifier=clf),
             nb_epoch=FLAGS.epochs,
             samples_per_epoch=samples_per_epoch,
             validation_data=None,
