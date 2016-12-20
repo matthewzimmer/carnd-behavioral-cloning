@@ -2,23 +2,18 @@ import random
 
 import cv2
 import numpy as np
-from os.path import basename
 from zimpy.camera_preprocessor import preprocess_image
 from scipy import misc
 import os
 
-def load_image(imagepath):
-    # imagepath = 'IMG/'+basename(imagepath)
-    path, file_name = os.path.split(imagepath)
-    imagepath = 'IMG/'+file_name
 
+def load_image(imagepath):
+    path, file_name = os.path.split(imagepath)
+    imagepath = 'IMG/' + file_name
     # image_array = cv2.imread(imagepath, 1)
-    # print('load image at path ', imagepath)
     image_array = misc.imread(imagepath)
     if image_array is None:
         print('File Not Found: {}'.format(imagepath))
-    # print(np.array(image_array.shape))
-    # print('{} shape: '.format(imagepath), image_array.shape)
     return image_array
 
 
@@ -107,7 +102,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                                 image_path = X[j].split(':')[1]
                                 # steering_angle += 0.05
                 else:
-                    image_path = X[j].split(':')[1] # center camera
+                    image_path = X[j].split(':')[1]  # center camera
 
                 if image_path is not None:
                     # print(image_path)

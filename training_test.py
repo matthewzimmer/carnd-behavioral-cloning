@@ -14,7 +14,7 @@ import pickle
 from scipy import misc, random
 from sklearn.model_selection import train_test_split
 
-from training import TrainTrackA, CommaAI, SimpleConvnet, Nvidia, Udacity, Basic
+from training import CommaAI, SimpleConvnet, Nvidia, Udacity, Basic, BasicELU
 from zimpy.camera_preprocessor import preprocess_image, predict_images
 from zimpy.generators.csv_image_provider import batch_generator, load_image
 from zimpy.serializers.trained_data_serializer import TrainedDataSerializer
@@ -279,6 +279,7 @@ def main(_):
                                         class_mode='sparse'), samples_per_epoch=len(X_train), nb_epoch=FLAGS.epochs)
     elif train_mode == 5:
         output_shape = (66, 200, 3)
+        #output_shape = (160, 320, 3)
         X_train, y_train, X_val, y_val = load_track_csv()
 
         # train model
@@ -301,19 +302,10 @@ def main(_):
             verbose=2)
 
     elif train_mode == 6:
-        # output_shape = (66, 200, 3)
         output_shape = (40, 80, 3)
         X_train, y_train, X_val, y_val = load_track_csv()
 
         print('population: ', len(X_train))
-
-        # Let's train solely on center images for now
-        # center_paths = np.array([x.split(':')[1] for x in X_train])
-        # X_train = np.array([preprocess_image(load_image(x), output_shape=output_shape) for x in center_paths if os.path.isfile(x) is True])
-        # X_train = np.array([x for x in center_paths if os.path.isfile(x) is True])
-
-        # train_generator = train_datagen.flow(X_train, y_train, batch_size=FLAGS.batch_size)
-        # train_generator = train_datagen.flow_from_directory('IMG', target_size=output_shape, classes=y_train, class_mode='sparse', batch_size=FLAGS.batch_size)
 
         # train model
         clf = Basic()
@@ -324,13 +316,6 @@ def main(_):
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
 
-        # A data generator was used to generate more data for better accuracy
-        train_datagen = ImageDataGenerator(
-            width_shift_range=0.1,
-            height_shift_range=0.02,
-            fill_mode='nearest')
-
-        # history = model.fit_generator(train_generator,
         history = model.fit_generator(
             batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
                             batch_size=FLAGS.batch_size,
@@ -341,6 +326,30 @@ def main(_):
             verbose=2)
 
     elif train_mode == 7:
+        output_shape = (40, 80, 3)
+        X_train, y_train, X_val, y_val = load_track_csv()
+
+        print('population: ', len(X_train))
+
+        # train model
+        clf = BasicELU()
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights)
+
+        samples_per_epoch = len(X_train)
+        if FLAGS.samples_per_epoch is not None:
+            print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
+            samples_per_epoch = FLAGS.samples_per_epoch
+
+        history = model.fit_generator(
+            batch_generator(X=X_train, Y=y_train, label='train set', num_epochs=FLAGS.epochs, flip_images=True,
+                            batch_size=FLAGS.batch_size,
+                            output_shape=output_shape),
+            nb_epoch=FLAGS.epochs,
+            samples_per_epoch=samples_per_epoch,
+            validation_data=None,
+            verbose=2)
+
+    elif train_mode == 8:
         output_shape = (80, 160, 3)
         X_train, y_train, X_val, y_val = load_track_data(output_shape=output_shape[0:2], repickle=FLAGS.repickle)
         img_rows, img_cols = X_train.shape[1], X_train.shape[2]

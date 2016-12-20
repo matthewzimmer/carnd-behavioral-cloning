@@ -224,17 +224,17 @@ class TrainTrackB(BaseNetwork):
 
 
 class SimpleConvnet(BaseNetwork):
-    def get_model(self, input_shape, output_shape):
+    def get_model(self, input_shape, output_shape, learning_rate=0.001, dropout_prob=0.1, activation='relu', use_weights=False):
         model = Sequential(name='input')
         model.add(Convolution2D(64, 3, 3, border_mode='same', input_shape=input_shape))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(128, 3, 3, border_mode="same", activation='relu'))
+        model.add(Convolution2D(128, 3, 3, border_mode="same", activation=activation))
         model.add(Dropout(0.5))
         model.add(Flatten())
-        model.add(Dense(1024, activation='relu'))
-        model.add(Dense(1024, activation='relu'))
-        model.add(Dense(512, activation='relu'))
-        model.add(Dense(256, activation='relu'))
+        model.add(Dense(1024, activation=activation))
+        model.add(Dense(1024, activation=activation))
+        model.add(Dense(512, activation=activation))
+        model.add(Dense(256, activation=activation))
         model.add(Dropout(0.5))
         # model.add(Activation('relu'))
         model.add(Dense(1))
@@ -295,29 +295,25 @@ class CommaAI(BaseNetwork):
 
 
 class Basic(BaseNetwork):
-    def get_model(self, input_shape, output_shape, learning_rate=0.001, use_weights=True):
+    def get_model(self, input_shape, output_shape, learning_rate=0.001, dropout_prob=0.1, activation='relu', use_weights=False):
         model = Sequential()
         model.add(Lambda(lambda x: x / 255 - 0.5,
                          input_shape=input_shape,
                          output_shape=output_shape))
-        model.add(Convolution2D(24, 5, 5, border_mode='valid', activation='relu'))
+        model.add(Convolution2D(24, 5, 5, border_mode='valid', activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(36, 5, 5, border_mode='valid', activation='relu'))
+        model.add(Convolution2D(36, 5, 5, border_mode='valid', activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(48, 5, 5, border_mode='same', activation='relu'))
+        model.add(Convolution2D(48, 5, 5, border_mode='same', activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(64, 3, 3, border_mode='same', activation='relu'))
+        model.add(Convolution2D(64, 3, 3, border_mode='same', activation=activation))
         model.add(Flatten())
-        model.add(Dropout(0.1))
-        model.add(Dense(1024, activation='relu'))
-        # model.add(ELU())
-        model.add(Dropout(0.1))
-        model.add(Dense(100, activation='relu'))
-        # model.add(ELU())
-        model.add(Dense(50, activation='relu'))
-        # model.add(ELU())
-        model.add(Dense(10, activation='relu'))
-        # model.add(ELU())
+        model.add(Dropout(dropout_prob))
+        model.add(Dense(1024, activation=activation))
+        model.add(Dropout(dropout_prob))
+        model.add(Dense(100, activation=activation))
+        model.add(Dense(50, activation=activation))
+        model.add(Dense(10, activation=activation))
         model.add(Dense(1, init='normal'))
 
         optimizer = Adam(lr=learning_rate)
@@ -326,52 +322,48 @@ class Basic(BaseNetwork):
         return model
 
 
-class Nvidia(BaseNetwork):
-    def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=True):
+class BasicELU(BaseNetwork):
+    def get_model(self, input_shape, output_shape, learning_rate=0.001, dropout_prob=0.5, activation='elu', use_weights=False):
         model = None
 
         optimizer = Adam(lr=learning_rate)
-        loss = 'mae'
+        loss = 'mean_squared_error'
+
         if use_weights:
             model = self.restore(optimizer=optimizer, loss=loss)
         if model is None:
             model = Sequential()
-            model.add(Lambda(lambda x: x / 127.5 - 1.,
+            model.add(Lambda(lambda x: x / 255 - 0.5,
                              input_shape=input_shape,
                              output_shape=output_shape))
-            model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(LeakyReLU())
-            model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(LeakyReLU())
-            model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(LeakyReLU())
-            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
-            model.add(LeakyReLU())
-            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
+            model.add(Convolution2D(24, 5, 5, border_mode='valid', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(36, 5, 5, border_mode='valid', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(48, 5, 5, border_mode='same', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(64, 3, 3, border_mode='same', activation=activation))
             model.add(Flatten())
-            model.add(LeakyReLU())
-            model.add(Dense(1164))
-            model.add(Dropout(.5))
-            model.add(Dense(100))
-            model.add(Dropout(.5))
-            model.add(Dense(50))
-            model.add(Dropout(.5))
-            model.add(LeakyReLU())
-            model.add(Dense(1))
-            model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+            model.add(Dropout(dropout_prob))
+            model.add(Dense(1024, activation=activation))
+            model.add(Dropout(dropout_prob))
+            model.add(Dense(100, activation=activation))
+            model.add(Dense(50, activation=activation))
+            model.add(Dense(10, activation=activation))
+            model.add(Dense(1, init='normal'))
 
-        model.summary()
+        model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
         self.model = model
+        model.summary()
+        return model
 
-        return self.model
 
-
-class Nvidia2(BaseNetwork):
-    def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=True):
+class Nvidia(BaseNetwork):
+    def get_model(self, input_shape, output_shape, learning_rate=0.0001, dropout_prob=0.5, activation='elu', use_weights=False):
         model = None
 
         optimizer = Adam(lr=learning_rate)
-        loss = 'msle'
+        loss = 'mse'
         if use_weights:
             model = self.restore(optimizer=optimizer, loss=loss)
         if model is None:
@@ -379,25 +371,19 @@ class Nvidia2(BaseNetwork):
             model.add(Lambda(lambda x: x / 127.5 - 1.,
                              input_shape=input_shape,
                              output_shape=output_shape))
-            model.add(Dropout(.2))
-            model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
-            model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
-            model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="valid"))
-            model.add(ELU())
-            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
-            model.add(ELU())
-            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid"))
+            model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode="valid", activation=activation))
+            model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode="valid", activation=activation))
+            model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode="valid", activation=activation))
+            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid", activation=activation))
+            model.add(Convolution2D(64, 3, 3, subsample=(1, 1), border_mode="valid", activation=activation))
             model.add(Flatten())
             model.add(ELU())
             model.add(Dense(1164))
-            model.add(Dropout(.2))
+            model.add(Dropout(dropout_prob))
             model.add(Dense(100))
-            model.add(Dropout(.2))
+            model.add(Dropout(dropout_prob))
             model.add(Dense(50))
-            model.add(Dropout(.2))
-            model.add(ELU())
+            model.add(Dropout(dropout_prob, activation=activation))
             model.add(Dense(1))
             model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
@@ -408,18 +394,18 @@ class Nvidia2(BaseNetwork):
 
 
 class Udacity(BaseNetwork):
-    def get_model(self, input_shape=None, output_shape=None, learning_rate=0.0001):
+    def get_model(self, input_shape=None, output_shape=None, learning_rate=0.0001, dropout_prob=0.5, activation='relu', use_weights=False):
         self.model = self.restore(optimizer=Adam(lr=learning_rate), loss='mse')
         if self.model is None:
-            # clf = Nvidia()
-            clf = CommaAI()
+            clf = Nvidia()
+            # clf = CommaAI()
             self.model = clf.get_model(input_shape, output_shape, learning_rate, use_weights=False)
         self.model.summary()
         return self.model
 
 
 class SimpleConvnet(BaseNetwork):
-    def get_model(self, input_shape, output_shape, learning_rate=0.0001, use_weights=True):
+    def get_model(self, input_shape, output_shape, learning_rate=0.0001, dropout_prob=0.5, activation='elu', use_weights=False):
         model = None
 
         optimizer = Adam(lr=learning_rate)
@@ -429,16 +415,11 @@ class SimpleConvnet(BaseNetwork):
         if model is None:
             model = Sequential()
             model.add(BatchNormalization(input_shape=input_shape, axis=1))
-            # model.add(Lambda(lambda x: x / 127.5 - 1.,
-            #                  input_shape=input_shape,
-            #                  output_shape=output_shape))
             model.add(Convolution2D(32, 3, 3, border_mode="same", input_shape=input_shape))
-            model.add(MaxPooling2D((2, 2), strides=(2, 2)))
-            model.add(ELU())
+            model.add(MaxPooling2D((2, 2), strides=(2, 2), activation=activation))
             model.add(Convolution2D(64, 3, 3, border_mode="same"))
             model.add(Flatten())
-            model.add(Dense(128))
-            model.add(ELU())
+            model.add(Dense(128, activation=activation))
             model.add(Dense(1))
 
         # print information about the model itself
@@ -446,9 +427,6 @@ class SimpleConvnet(BaseNetwork):
 
         # Compile and train the model.
         model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
-
-        # history = model.fit(X_train, y_train, batch_size=batch_size, nb_epoch=nb_epoch, verbose=verbose, validation_data=validation_data)
-        # print(history.history)
 
         self.model = model
 
@@ -460,7 +438,7 @@ class MyVGG16(BaseNetwork):
     Downloaded from https://github.com/commaai/research/blob/master/train_steering_model.py
     """
 
-    def get_model(self, input_shape, output_shape):
+    def get_model(self, input_shape, output_shape, learning_rate=0.0001, dropout_prob=0.5, activation='relu', use_weights=False):
         model = Sequential()
         # model.add(Input(input_shape=input_shape, output_shape=output_shape))
         # model.add(Lambda(lambda x: x / 127.5 - 1.,
@@ -468,45 +446,45 @@ class MyVGG16(BaseNetwork):
         #                  input_shape=input_shape,
         #                  output_shape=output_shape))
         model.add(ZeroPadding2D((1, 1), input_shape=input_shape))
-        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(Convolution2D(64, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(Convolution2D(64, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(Convolution2D(128, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(Convolution2D(128, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(Flatten())
-        model.add(Dense(4096, activation='relu'))
+        model.add(Dense(4096, activation=activation))
         model.add(Dropout(0.5))
-        model.add(Dense(4096, activation='relu'))
+        model.add(Dense(4096, activation=activation))
         model.add(Dropout(0.5))
         model.add(Dense(1000, activation='softmax'))
         model.add(Dropout(.5))
@@ -528,50 +506,50 @@ class MyVGG16(BaseNetwork):
 
 
 class VGG16(BaseNetwork):
-    def get_model(self, input_shape, output_shape):
+    def get_model(self, input_shape, output_shape, learning_rate=0.0001, dropout_prob=0.5, activation='relu', use_weights=False):
         model = Sequential()
 
         # TODO: Ensure to provide proper input_shape
         model.add(ZeroPadding2D((1, 1), input_shape=input_shape))
-        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(Convolution2D(64, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(64, 3, 3, activation='relu'))
+        model.add(Convolution2D(64, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(Convolution2D(128, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(128, 3, 3, activation='relu'))
+        model.add(Convolution2D(128, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(256, 3, 3, activation='relu'))
+        model.add(Convolution2D(256, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(ZeroPadding2D((1, 1)))
-        model.add(Convolution2D(512, 3, 3, activation='relu'))
+        model.add(Convolution2D(512, 3, 3, activation=activation))
         model.add(MaxPooling2D((2, 2), strides=(2, 2)))
 
         model.add(Flatten())
-        model.add(Dense(4096, activation='relu'))
+        model.add(Dense(4096, activation=activation))
         model.add(Dropout(0.5))
-        model.add(Dense(4096, activation='relu'))
+        model.add(Dense(4096, activation=activation))
         model.add(Dropout(0.5))
         model.add(Dense(1000, activation='softmax'))
         model.add(Dropout(.5))
