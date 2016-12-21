@@ -291,7 +291,6 @@ def main(_):
         if FLAGS.samples_per_epoch is not None:
             print('overriding samples per epoch from {} to {}'.format(samples_per_epoch, FLAGS.samples_per_epoch))
             samples_per_epoch = FLAGS.samples_per_epoch
-
         history = model.fit_generator(
             batch_generator(X_train, y_train, 'train set', FLAGS.epochs, batch_size=FLAGS.batch_size,
                             output_shape=output_shape),
@@ -301,6 +300,7 @@ def main(_):
             validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs,
                                             batch_size=FLAGS.batch_size, output_shape=output_shape),
             verbose=2)
+
 
     elif train_mode == 6:
         output_shape = (40, 80, 3)

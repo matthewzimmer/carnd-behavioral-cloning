@@ -12,11 +12,8 @@ import numpy as np
 import json
 import uuid
 import os
-import time
 
-from keras.engine import Input
-from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU, \
-    BatchNormalization, LeakyReLU
+from keras.layers import Convolution2D, Activation, MaxPooling2D, Dropout, Flatten, Dense, ZeroPadding2D, Lambda, ELU, BatchNormalization
 from keras.models import Sequential, model_from_json
 from keras.optimizers import Adam
 
