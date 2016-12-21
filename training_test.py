@@ -280,12 +280,13 @@ def main(_):
                                         class_mode='sparse'), samples_per_epoch=len(X_train), nb_epoch=FLAGS.epochs)
     elif train_mode == 5:
         output_shape = (66, 200, 3)
-        #output_shape = (160, 320, 3)
+        # output_shape = (160, 320, 3)
         X_train, y_train, X_val, y_val = load_track_csv()
 
         # train model
         clf = Nvidia()
-        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights, dropout_prob=FLAGS.dropout_prob)
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights,
+                              dropout_prob=FLAGS.dropout_prob)
 
         samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
@@ -335,7 +336,8 @@ def main(_):
 
         # train model
         clf = BasicELU()
-        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights, dropout_prob=FLAGS.dropout_prob)
+        model = clf.get_model(input_shape=output_shape, output_shape=output_shape, use_weights=FLAGS.use_weights,
+                              dropout_prob=FLAGS.dropout_prob)
 
         samples_per_epoch = len(X_train)
         if FLAGS.samples_per_epoch is not None:
