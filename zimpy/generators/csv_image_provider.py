@@ -73,57 +73,57 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                         if chance > 0.75:
                             image_path = X[j].split(':')[0]
                             augmented_steering = steering_angle*3.0
-                            print('L1 - real:{} - aug:{} - LEFT 3x'.format(steering_angle, augmented_steering))
+                            # print('L1 - real:{} - aug:{} - LEFT 3x'.format(steering_angle, augmented_steering))
                             steering_angle = augmented_steering
                         else:
                             if chance > 0.5:
                                 image_path = X[j].split(':')[0]
                                 augmented_steering = steering_angle*2.0
-                                print('L2 - real:{} - aug:{} - LEFT 2x'.format(steering_angle, augmented_steering))
+                                # print('L2 - real:{} - aug:{} - LEFT 2x'.format(steering_angle, augmented_steering))
                                 steering_angle = augmented_steering
                             else:
                                 if chance > 0.25:
                                     image_path = X[j].split(':')[1]
                                     augmented_steering = steering_angle*1.5
-                                    print('L3 - real:{} - aug:{} - CENTER 1.5x'.format(steering_angle, augmented_steering))
+                                    # print('L3 - real:{} - aug:{} - CENTER 1.5x'.format(steering_angle, augmented_steering))
                                     steering_angle = augmented_steering
                                 else:
                                     # progressively increase chances of introducing raw center
                                     if True or random.random() > (1. - _tot_epochs / num_epochs):
-                                        print('L4 - {} - CENTER'.format(steering_angle))
+                                        # print('L4 - {} - CENTER'.format(steering_angle))
                                         image_path = X[j].split(':')[1]
                                     else:
                                         print('L5 - {} - SKIPPED'.format(steering_angle))
-                    else:
+                    # else:
                         if steering_angle > 0.01:
                             chance = random.random()
                             if chance > 0.75:
                                 image_path = X[j].split(':')[2]
                                 augmented_steering = steering_angle*3.0
-                                print('R1 - real:{} - aug:{} - RIGHT 3x'.format(steering_angle, augmented_steering))
+                                # print('R1 - real:{} - aug:{} - RIGHT 3x'.format(steering_angle, augmented_steering))
                                 steering_angle = augmented_steering
                             else:
                                 if chance > 0.5:
                                     image_path = X[j].split(':')[2]
                                     augmented_steering = steering_angle*2.0
-                                    print('R2 - real:{} - aug:{} - RIGHT 2x'.format(steering_angle, augmented_steering))
+                                    # print('R2 - real:{} - aug:{} - RIGHT 2x'.format(steering_angle, augmented_steering))
                                     steering_angle = augmented_steering
                                 else:
                                     if chance > 0.25:
                                         image_path = X[j].split(':')[1]
                                         augmented_steering = steering_angle*1.5
-                                        print('R3 - real:{} - aug:{} - CENTER 1.5x'.format(steering_angle, augmented_steering))
+                                        # print('R3 - real:{} - aug:{} - CENTER 1.5x'.format(steering_angle, augmented_steering))
                                         steering_angle = augmented_steering
                                     else:
                                         if True or random.random() > (1. - _tot_epochs / num_epochs):
                                             image_path = X[j].split(':')[1]
-                                            print('R4 - real:{} - aug:{} - CENTER 1x'.format(steering_angle, steering_angle))
+                                            # print('R4 - real:{} - aug:{} - CENTER 1x'.format(steering_angle, steering_angle))
                                         else:
                                             print('R5 - {} - SKIPPED'.format(steering_angle))
                         else:
                             # progressively increase chances of introducing raw center
                             if True or random.random() > (1. - _tot_epochs / num_epochs):
-                                print('C1 - {} - CENTER'.format(steering_angle))
+                                # print('C1 - {} - CENTER'.format(steering_angle))
                                 image_path = X[j].split(':')[1]
                             else:
                                 print('C2 - {} - SKIPPED'.format(steering_angle))

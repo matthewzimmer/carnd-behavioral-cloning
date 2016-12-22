@@ -1,27 +1,30 @@
 import argparse
 import base64
 import json
-import cv2
-import os
+
 import numpy as np
 import socketio
-import eventlet
 import eventlet.wsgi
-import time
 from PIL import Image
-from PIL import ImageOps
-from flask import Flask, render_template
+from flask import Flask
 from io import BytesIO
 
 from keras.models import model_from_json
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 
-from zimpy.camera_preprocessor import preprocess_image, flip_image
+from zimpy.camera_preprocessor import preprocess_image
 
 sio = socketio.Server()
 app = Flask(__name__)
 model = None
-prev_image_array = None
+
+OUTPUT_SHAPE = (66, 200)
+MIN_THROTTLE = 0.05
+MAX_THROTTLE = 0.25
+
+
+def get_throttle(steering_angle):
+    return 0.2
+    # return (-(MAX_THROTTLE - MIN_THROTTLE) * abs(steering_angle)) * 3 + MAX_THROTTLE
 
 
 @sio.on('telemetry')
@@ -36,16 +39,12 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
-    image_array = preprocess_image(image_array, output_shape=(66, 200))
-    # transformed_image_array = image_array
+    image_array = preprocess_image(image_array, output_shape=OUTPUT_SHAPE)
+    transformed_image_array = image_array[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
-    steering_angle = float(model.predict(image_array[None, :, :, :], batch_size=1))
-    # flipped_steering_angle = float(model.predict(np.fliplr(image_array)[None, :, :, :], batch_size=1))
-    # mean_steering_angle = np.mean([steering_angle, flipped_steering_angle])
-    # print('mean steering angle', mean_steering_angle)
-    # steering_angle = mean_steering_angle
+    steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.2
+    throttle = get_throttle(steering_angle)
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
 
@@ -68,16 +67,8 @@ if __name__ == '__main__':
     parser.add_argument('model', type=str,
                         help='Path to model definition json. Model weights should be on the same path.')
     args = parser.parse_args()
-    print(args)
-
-    # os.system("python training_test.py --epochs 2 --batch_size 128 --algo_mode 2 --repickle True")
-    # os.system("python training_test.py --epochs 5 --batch_size 128 --algo_mode 3 --repickle True")
-    # os.system("python training_test.py --epochs 5 --batch_size 32 --algo_mode 3 --repickle True --lr 0.0001")
-
     with open(args.model, 'r') as jfile:
-        the_json = json.load(jfile)
-        print(json.loads(the_json))
-        model = model_from_json(the_json)
+        model = model_from_json(json.load(jfile))
 
     model.compile("adam", "mse")
     weights_file = args.model.replace('json', 'h5')
