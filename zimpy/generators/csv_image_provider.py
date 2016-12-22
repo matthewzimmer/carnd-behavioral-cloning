@@ -70,7 +70,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
 
                 print('angle: {}        z_score: {}'.format(steering_angle, z_score))
 
-                mode = 2
+                mode = 1
                 if mode == 1:
                     image_path = center  # center camera
                 else:
