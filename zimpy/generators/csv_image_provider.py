@@ -63,7 +63,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                 steering_angle = Y[j]
                 image_path = None
 
-                mode = 2
+                mode = 1
                 if mode == 1:
                     image_path = X[j].split(':')[1]  # center camera
                 else:
