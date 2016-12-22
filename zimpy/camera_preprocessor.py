@@ -8,30 +8,19 @@ def flip_image(image_array, steering_angle):
 
 
 def preprocess_image(image_array, output_shape=None):
-    # hard-code this so drive.py and training_test.py use same size (refactor later)
     if output_shape is None:
         output_shape = (66, 200)
-        # output_shape = (40, 80)
-    # output_shape = (16, 32)
-    # output_shape = (32, 64)
-    # output_shape = (160, 320)
-    # print('preprocess image shape: ', image_array.shape)
-
     image_array = cv2.cvtColor(image_array, cv2.COLOR_BGR2YUV)
-    image_array = image_array[50:140, 0:320] # [y1:y2, x1:x2] - crops top portion as well as car's hood from image
-    # image_array = image_array[70:140, 0:320] # [y1:y2, x1:x2] - crops top portion as well as car's hood from image
 
+    # [y1:y2, x1:x2] - crops top portion as well as car's hood from image
+    image_array = image_array[50:140, 0:320]
+
+    # resize image to output_shape
     image_array = cv2.resize(image_array, (output_shape[1], output_shape[0]), interpolation=cv2.INTER_AREA)
 
     # image_array = image_array / 255 - 0.5
     # image_array = image_array / 127.5 - 1.
     # image_array = cv2.normalize(image_array, image_array, norm_type=cv2.NORM_MINMAX)
-
-    # 2. crop top third of image
-    # h, w = image_array.shape[0:2]
-    # y1 = int(h/3)
-    # y2 = h
-    # image_array = image_array[y1:y2, 0:w]
 
     return image_array
 
