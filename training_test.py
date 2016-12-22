@@ -68,7 +68,7 @@ def load_track_csv():
             r = row['right'].strip()
             a = float(row['steering'])
 
-            if os.path.isfile(c):
+            if os.path.isfile(c) and os.path.isfile(l) and os.path.isfile(r):
                 # casts absolute path to relative to remain env agnostic
                 l, c, r = [('IMG/' + os.path.split(file_path)[1]) for file_path in (l, c, r)]
                 # single string in memory
