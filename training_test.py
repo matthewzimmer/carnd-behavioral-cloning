@@ -118,6 +118,7 @@ def main(_):
             nb_epoch=FLAGS.epochs,
             samples_per_epoch=samples_per_epoch,
             nb_val_samples=len(X_val),
+            classifier=clf,
             validation_data=batch_generator(X_val, y_val, 'validation set', num_epochs=FLAGS.epochs,
                                             batch_size=FLAGS.batch_size, output_shape=output_shape),
             verbose=2)
