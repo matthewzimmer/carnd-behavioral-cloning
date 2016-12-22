@@ -68,7 +68,7 @@ def batch_generator(X, Y, label, num_epochs, batch_size=32, output_shape=None, f
                 right = X[j].split(':')[2]
                 z_score = X[j].split(':')[3]
 
-                print('angle: {}        z_score: {}'.format(steering_angle, z_score))
+                # print('angle: {}        z_score: {}'.format(steering_angle, z_score))
 
                 mode = 1
                 if mode == 1:
