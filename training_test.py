@@ -59,20 +59,26 @@ def load_track_csv():
 
     if os.path.isfile(drive_log_path):
         df = pd.read_csv(drive_log_path)
+
+        # compute z score for each steering angle
+        col_zscore = 'steering_zscore'
+        df[col_zscore] = (df['steering'] - df['steering'].mean())/df['steering'].std(ddof=0)
+
         headers = list(df.columns.values)
         print(headers)
         for index, row in df.iterrows():
-            # print(observation)
+
             c = row['center'].strip()
             l = row['left'].strip()
             r = row['right'].strip()
             a = float(row['steering'])
+            z = float(row[col_zscore])
 
             if os.path.isfile(c) and os.path.isfile(l) and os.path.isfile(r):
                 # casts absolute path to relative to remain env agnostic
                 l, c, r = [('IMG/' + os.path.split(file_path)[1]) for file_path in (l, c, r)]
                 # single string in memory
-                x = '{}:{}:{}'.format(l, c, r)
+                x = '{}:{}:{}:{}'.format(l, c, r, z)
                 X_train.append(x)
                 y_train.append(a)
 
@@ -83,8 +89,7 @@ def load_track_csv():
         test_size=0.01,
         random_state=0)
 
-    X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train, dtype=np.float32), np.array(X_val), np.array(
-        y_val, dtype=np.float32)
+    X_train, y_train, X_val, y_val = np.array(X_train), np.array(y_train), np.array(X_val), np.array(y_val)
 
     return X_train, y_train, X_val, y_val
 
