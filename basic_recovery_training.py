@@ -8,8 +8,8 @@ flags.DEFINE_integer('epochs', 2, "The number of epochs.")
 flags.DEFINE_integer('batch_size', 32, "The batch size.")
 flags.DEFINE_integer('validation_split_percentage', 0.0, "The batch size.")
 flags.DEFINE_boolean('use_weights', True, "Whether to use prior trained weights.")
-flags.DEFINE_float('lr', 0.001, "Optimizer learning rate.")
-flags.DEFINE_float('dropout_prob', 0.1, "Percentage of neurons to misfire during training.")
+flags.DEFINE_float('lr', 0.0001, "Optimizer learning rate.")
+flags.DEFINE_float('dropout_prob', 0., "Percentage of neurons to misfire during training.")
 flags.DEFINE_string('activation', 'relu', "The activation function used by the network.")
 
 train_network(
