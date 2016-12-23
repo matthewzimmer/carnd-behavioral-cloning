@@ -24,8 +24,24 @@ MAX_THROTTLE = 0.3
 
 
 def get_throttle(steering_angle):
+    """
+    Simulated throttle modulation
+
+    Simulates a human driving taking their foot off the accellerator
+    pedal when approaching a sharp curve.
+
+    The idea here is to find # of standard deviations away from 0 the steering angle is.
+    The further away from the mean (i.e., wide turns), the more we lay off the throttle.
+
+    That said, 3 works well in most cases so it's fixed for now.
+
+    :param steering_angle:
+    :return:
+    """
+    stdev = 3
+    throttle_modulation = stdev * (-(MAX_THROTTLE - MIN_THROTTLE) * abs(steering_angle))
     # return 0.2
-    return (-(MAX_THROTTLE - MIN_THROTTLE) * abs(steering_angle)) * 3 + MAX_THROTTLE
+    return throttle_modulation + MAX_THROTTLE
 
 
 @sio.on('telemetry')
