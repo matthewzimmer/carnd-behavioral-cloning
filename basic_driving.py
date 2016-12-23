@@ -20,12 +20,12 @@ model = None
 
 OUTPUT_SHAPE = (40, 80)
 MIN_THROTTLE = 0.05
-MAX_THROTTLE = 0.25
+MAX_THROTTLE = 0.3
 
 
 def get_throttle(steering_angle):
-    return 0.2
-    # return (-(MAX_THROTTLE - MIN_THROTTLE) * abs(steering_angle)) * 3 + MAX_THROTTLE
+    # return 0.2
+    return (-(MAX_THROTTLE - MIN_THROTTLE) * abs(steering_angle)) * 3 + MAX_THROTTLE
 
 
 @sio.on('telemetry')
