@@ -40,6 +40,8 @@ class ImagePlotter:
         plt.show()
 
     def plot_images(images, labels, rows=5, columns=5, cls_pred=None, cmap=None):
+        plt.axis("off")
+
         fig, axes = plt.subplots(rows, columns)
         fig.subplots_adjust(hspace=0.5, wspace=0.5)
 
@@ -51,7 +53,7 @@ class ImagePlotter:
 
             # Show true and predicted classes.
             if cls_pred is None:
-                xlabel = "True: {0}".format(labels[i])
+                xlabel = "T: {0}".format(labels[i])
             else:
                 xlabel = "T: {0}, P: {1}".format(labels[i], cls_pred[i])
 
