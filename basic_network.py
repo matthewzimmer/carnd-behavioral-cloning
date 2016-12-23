@@ -401,6 +401,19 @@ class BaseNetwork:
 class Track1(BaseNetwork):
     def fit(self, model, batch_generator, X_train, y_train, X_val, y_val, nb_epoch=2, batch_size=32,
             samples_per_epoch=None, output_shape=(40, 80, 3)):
+        # Keras throws an exception if we specify a batch generator
+        # for an empty validation dataset.
+        validation_data = None
+        if len(X_val) > 0:
+            validation_data = batch_generator(
+                X=X_val,
+                Y=y_val,
+                label='validation set',
+                num_epochs=nb_epoch,
+                batch_size=batch_size,
+                output_shape=output_shape
+            )
+
         # Fit the model leveraging the custom
         # batch generator baked into the
         # dataset itself.
@@ -418,14 +431,7 @@ class Track1(BaseNetwork):
             samples_per_epoch=len(X_train),
             nb_val_samples=len(X_val),
             verbose=2,
-            validation_data=batch_generator(
-                X=X_val,
-                Y=y_val,
-                label='validation set',
-                num_epochs=nb_epoch,
-                batch_size=batch_size,
-                output_shape=output_shape
-            )
+            validation_data=validation_data
         )
 
         print(history.history)
