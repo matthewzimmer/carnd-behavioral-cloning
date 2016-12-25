@@ -1,4 +1,4 @@
-CARND_IP = '54.213.216.25'
+CARND_IP = '54.186.187.122'
 
 namespace :carnd do
   task :ssh do
@@ -49,6 +49,8 @@ namespace :carnd do
     # sh "scp -rp carnd@#{CARND_IP}:~/trained_model.zip ."
     # sh 'unzip -u trained_model.zip -d ..'
     sh "rsync -avzh --progress #{host}:~/carnd-behavioral-cloning/data/trained ./data"
+    sh "rsync -avzh --progress #{host}:~/carnd-behavioral-cloning/model_final.json ."
+    sh "rsync -avzh --progress #{host}:~/carnd-behavioral-cloning/model_final.h5 ."
   end
 
   task :down, [:src, :dest] do |t, args|

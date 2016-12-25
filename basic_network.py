@@ -367,6 +367,18 @@ class BaseNetwork:
         print('Saved {} model.'.format(self.__class__.__name__))
         self.__persist()
 
+    def restore(self):
+        model = None
+        if os.path.exists(self.MODEL_FILE_NAME):
+            with open(self.MODEL_FILE_NAME, 'r') as jfile:
+                the_json = json.load(jfile)
+                print(json.loads(the_json))
+                model = model_from_json(the_json)
+            if os.path.exists(self.WEIGHTS_FILE_NAME):
+                model.load_weights(self.WEIGHTS_FILE_NAME)
+        return model
+
+
     def __persist(self):
         save_dir = os.path.join(os.path.dirname(__file__))
         weights_save_path = os.path.join(save_dir, self.WEIGHTS_FILE_NAME)
@@ -389,6 +401,19 @@ class BaseNetwork:
 class Track1(BaseNetwork):
     def fit(self, model, batch_generator, X_train, y_train, X_val, y_val, nb_epoch=2, batch_size=32,
             samples_per_epoch=None, output_shape=(40, 80, 3)):
+        # Keras throws an exception if we specify a batch generator
+        # for an empty validation dataset.
+        validation_data = None
+        if len(X_val) > 0:
+            validation_data = batch_generator(
+                X=X_val,
+                Y=y_val,
+                label='validation set',
+                num_epochs=nb_epoch,
+                batch_size=batch_size,
+                output_shape=output_shape
+            )
+
         # Fit the model leveraging the custom
         # batch generator baked into the
         # dataset itself.
@@ -404,21 +429,15 @@ class Track1(BaseNetwork):
             ),
             nb_epoch=nb_epoch,
             samples_per_epoch=len(X_train),
+            nb_val_samples=len(X_val),
             verbose=2,
-            validation_data=batch_generator(
-                X=X_val,
-                Y=y_val,
-                label='validation set',
-                num_epochs=nb_epoch,
-                batch_size=batch_size,
-                output_shape=output_shape
-            )
+            validation_data=validation_data
         )
 
         print(history.history)
         self.save()
 
-    def build_model(self, input_shape, output_shape, learning_rate=0.001, dropout_prob=0.1, activation='relu'):
+    def build_model(self, input_shape, output_shape, learning_rate=0.001, dropout_prob=0.1, activation='relu', use_weights=False):
         """
         Inital zero-mean normalization input layer.
         A 4-layer deep neural network with 4 fully connected layers at the top.
@@ -430,25 +449,29 @@ class Track1(BaseNetwork):
         Mean squared error loss function was used since this is a regression problem and MSE is
         quite common and robust for regression analysis.
         """
-        model = Sequential()
-        model.add(Lambda(lambda x: x / 255 - 0.5,
-                         input_shape=input_shape,
-                         output_shape=output_shape))
-        model.add(Convolution2D(24, 5, 5, border_mode='valid', activation=activation))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(36, 5, 5, border_mode='valid', activation=activation))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(48, 5, 5, border_mode='same', activation=activation))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Convolution2D(64, 3, 3, border_mode='same', activation=activation))
-        model.add(Flatten())
-        model.add(Dropout(dropout_prob))
-        model.add(Dense(1024, activation=activation))
-        model.add(Dropout(dropout_prob))
-        model.add(Dense(100, activation=activation))
-        model.add(Dense(50, activation=activation))
-        model.add(Dense(10, activation=activation))
-        model.add(Dense(1, init='normal'))
+        model = None
+        if use_weights:
+            model = self.restore()
+        if model is None:
+            model = Sequential()
+            model.add(Lambda(lambda x: x / 255 - 0.5,
+                             input_shape=input_shape,
+                             output_shape=output_shape))
+            model.add(Convolution2D(24, 5, 5, border_mode='valid', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(36, 5, 5, border_mode='valid', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(48, 5, 5, border_mode='same', activation=activation))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
+            model.add(Convolution2D(64, 3, 3, border_mode='same', activation=activation))
+            model.add(Flatten())
+            model.add(Dropout(dropout_prob))
+            model.add(Dense(1024, activation=activation))
+            model.add(Dropout(dropout_prob))
+            model.add(Dense(100, activation=activation))
+            model.add(Dense(50, activation=activation))
+            model.add(Dense(10, activation=activation))
+            model.add(Dense(1, init='normal'))
 
         optimizer = Adam(lr=learning_rate)
         model.compile(loss='mse', optimizer=optimizer, metrics=['accuracy'])
@@ -458,12 +481,14 @@ class Track1(BaseNetwork):
 
 
 def train_network(nb_epoch=2, batch_size=32, validation_split_percentage=0.05, output_shape=(40, 80, 3),
-                  learning_rate=0.001, dropout_prob=0.1, activation='relu'):
+                  learning_rate=0.001, dropout_prob=0.1, activation='relu', use_weighs=False):
     dataset = load_dataset(validation_split_percentage=validation_split_percentage)
     # visualize_dataset(dataset)
     # visualize_features(dataset)
-    print('Center camera view shape:\n\n{}\n'.format(dataset.X_train[0].center_camera_view().shape))
-    print(dataset.X_train[0])
+
+    if len(dataset.X_train) > 0:
+        print('Center camera view shape:\n\n{}\n'.format(dataset.X_train[0].center_camera_view().shape))
+        print(dataset.X_train[0])
 
     clf = Track1()
     model = clf.build_model(
@@ -471,12 +496,17 @@ def train_network(nb_epoch=2, batch_size=32, validation_split_percentage=0.05, o
         output_shape=output_shape,
         learning_rate=learning_rate,
         dropout_prob=dropout_prob,
-        activation=activation
+        activation=activation,
+        use_weights=use_weighs
     )
 
     clf.fit(
-        model,
-        dataset,
+        model=model,
+        batch_generator=dataset.batch_generator,
+        X_train=dataset.X_train,
+        y_train=dataset.y_train,
+        X_val=dataset.X_val,
+        y_val=dataset.y_val,
         nb_epoch=nb_epoch,
         batch_size=batch_size
     )

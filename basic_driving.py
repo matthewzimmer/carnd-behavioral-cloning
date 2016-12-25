@@ -19,8 +19,8 @@ app = Flask(__name__)
 model = None
 
 OUTPUT_SHAPE = (40, 80)
-MIN_THROTTLE = 0.05
-MAX_THROTTLE = 0.3
+MIN_THROTTLE = 0.2
+MAX_THROTTLE = 0.5
 
 
 def get_throttle(steering_angle):
